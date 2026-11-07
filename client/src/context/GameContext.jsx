@@ -54,7 +54,12 @@ export function GameProvider({ children }) {
     });
 
     socket.on(SOCKET_EVENTS.ROOM_UPDATED, (updatedState) => {
-      setRoomState(updatedState);
+      setRoomState((prevState) => {
+        if (!prevState?.isMyTurn && updatedState.isMyTurn) {
+          sounds.playTurnAlert();
+        }
+        return updatedState;
+      });
       if (updatedState.turnTimeRemaining !== undefined) {
         setTurnTime(updatedState.turnTimeRemaining);
       }

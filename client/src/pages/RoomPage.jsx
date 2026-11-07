@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Play, Copy, Check, Users, Share2, Crown, Sparkles, Volume2, VolumeX } from 'lucide-react';
+import { Play, Copy, Check, Share2, Crown } from 'lucide-react';
 import { useGame } from '../context/GameContext.jsx';
 import { SkribblHeader } from '../components/SkribblHeader.jsx';
 import { SkribblBingoCard } from '../components/SkribblBingoCard.jsx';
@@ -62,7 +62,7 @@ export function RoomPage() {
         <div className="text-center space-y-3 bg-white rounded-3xl border-4 border-[#0b2c4d] shadow-[0_8px_0_#08233d] p-8 text-[#0b2c4d] max-w-sm w-full">
           <div className="text-5xl animate-bounce">🎯</div>
           <h2 className="text-2xl font-black">Joining Room {roomCode}...</h2>
-          <p className="text-slate-500 font-bold text-xs">Getting your 5×5 card ready!</p>
+          <p className="text-slate-500 font-bold text-xs">Getting your 1–25 card ready!</p>
           {error && <p className="text-rose-500 font-black text-xs">{error}</p>}
         </div>
       </div>
@@ -82,17 +82,17 @@ export function RoomPage() {
       <main className="flex-1 max-w-7xl mx-auto w-full p-2 sm:p-4">
         {isLobby ? (
           /* ==================== SKRIBBL LOBBY VIEW ==================== */
-          <div className="max-w-2xl mx-auto space-y-4 animate-pop my-auto pt-4">
-            <div className="bg-white rounded-3xl border-4 border-[#0b2c4d] shadow-[0_8px_0_#08233d] p-5 sm:p-7 text-center text-[#0b2c4d]">
+          <div className="max-w-2xl mx-auto space-y-4 animate-pop my-auto pt-6">
+            <div className="bg-white rounded-3xl border-4 border-[#0b2c4d] shadow-[0_8px_0_#08233d] p-6 sm:p-8 text-center text-[#0b2c4d]">
               <div className="text-xs font-black uppercase text-slate-400 tracking-wider">
                 skribbl.io Game Lobby
               </div>
-              <h2 className="text-2xl sm:text-3xl font-black mt-1 mb-3">
-                Waiting for Players to Join
+              <h2 className="text-3xl font-black mt-1 mb-3">
+                Waiting for Players
               </h2>
 
               {/* Big Room Code Box */}
-              <div className="inline-flex items-center space-x-3 bg-[#f0f4f8] border-3 border-[#0b2c4d] px-5 py-2.5 rounded-2xl mb-3">
+              <div className="inline-flex items-center space-x-3 bg-[#f0f4f8] border-3 border-[#0b2c4d] px-6 py-2.5 rounded-2xl mb-3 shadow-inner">
                 <span className="text-xs font-black uppercase text-slate-500">Room Code:</span>
                 <span className="font-mono text-3xl font-black text-[#0084ff] tracking-wider">
                   {roomState.roomCode}
@@ -119,7 +119,7 @@ export function RoomPage() {
             </div>
 
             {/* Players in Lobby Grid */}
-            <div className="bg-white rounded-3xl border-4 border-[#0b2c4d] shadow-[0_6px_0_#08233d] p-4 sm:p-5">
+            <div className="bg-white rounded-3xl border-4 border-[#0b2c4d] shadow-[0_6px_0_#08233d] p-5">
               <div className="flex items-center justify-between pb-2 border-b-2 border-slate-200 mb-3 px-1">
                 <span className="font-black text-sm text-[#0b2c4d] uppercase tracking-wide">
                   Connected Players ({roomState.playerCount})
@@ -129,13 +129,13 @@ export function RoomPage() {
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {roomState.players.map((p) => {
                   const isMe = p.sessionToken === sessionToken;
                   return (
                     <div
                       key={p.sessionToken}
-                      className={`flex flex-col items-center p-3 rounded-2xl border-2 transition-all ${
+                      className={`flex flex-col items-center p-3 rounded-2xl border-3 transition-all ${
                         isMe ? 'bg-blue-50 border-blue-400' : 'bg-slate-50 border-slate-200'
                       }`}
                     >
@@ -173,7 +173,7 @@ export function RoomPage() {
                 <button
                   onClick={handleStartGame}
                   disabled={isStarting}
-                  className="skribbl-btn-green py-3 px-10 rounded-2xl text-xl inline-flex items-center space-x-2 tracking-wide"
+                  className="skribbl-btn-green py-3.5 px-10 rounded-2xl text-xl inline-flex items-center space-x-2 tracking-wide"
                 >
                   <Play className="w-5 h-5 fill-white" />
                   <span>{isStarting ? 'Starting...' : 'Start Game!'}</span>
@@ -187,22 +187,22 @@ export function RoomPage() {
           </div>
         ) : (
           /* ==================== SKRIBBL 3-COLUMN GAMEPLAY VIEW ==================== */
-          <div className="flex flex-col lg:flex-row gap-3 items-start justify-center pt-1">
+          <div className="flex flex-col lg:flex-row gap-3.5 items-stretch justify-center pt-1">
             {/* Left Column: skribbl Player Table */}
-            <div className="w-full lg:w-auto order-2 lg:order-1">
+            <div className="w-full lg:w-60 flex-shrink-0">
               <SkribblPlayerList />
             </div>
 
             {/* Middle Column: Central Game Board & Action Banner */}
-            <div className="flex-1 w-full flex flex-col items-center space-y-3 order-1 lg:order-2">
+            <div className="flex-1 w-full max-w-xl flex flex-col items-center space-y-2.5">
               {/* Turn Callout Banner */}
-              <div className="w-full max-w-xl text-center">
+              <div className="w-full text-center">
                 {isMyTurn ? (
                   <div className="bg-emerald-400 text-emerald-950 border-3 border-[#0b2c4d] shadow-[0_4px_0_#08233d] p-2.5 rounded-2xl font-black text-xs sm:text-sm animate-pulse">
                     <span>✏️ YOUR TURN! Click any number on your card to call it!</span>
                   </div>
                 ) : currentCalled ? (
-                  <div className="bg-amber-300 text-amber-950 border-3 border-[#0b2c4d] shadow-[0_4px_0_#08233d] p-2.5 rounded-2xl font-black text-xs sm:text-sm">
+                  <div className="bg-yellow-300 text-yellow-950 border-3 border-[#0b2c4d] shadow-[0_4px_0_#08233d] p-2.5 rounded-2xl font-black text-xs sm:text-sm">
                     <span>📢 {turnPlayerName} called [{currentCalled}]! Click {currentCalled} on your card to mark it!</span>
                   </div>
                 ) : (
@@ -224,7 +224,7 @@ export function RoomPage() {
             </div>
 
             {/* Right Column: skribbl Chat & Called Numbers */}
-            <div className="w-full lg:w-auto order-3">
+            <div className="w-full lg:w-72 flex-shrink-0">
               <SkribblChat calledNumbers={roomState.calledNumbers} />
             </div>
           </div>

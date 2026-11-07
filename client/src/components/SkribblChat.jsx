@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, MessageSquare } from 'lucide-react';
+import { Send } from 'lucide-react';
 import { useGame } from '../context/GameContext.jsx';
 import { sounds } from '../services/soundEffects.js';
 
@@ -34,11 +34,11 @@ export function SkribblChat({ calledNumbers = [] }) {
   };
 
   return (
-    <div className="w-full lg:w-72 bg-white rounded-3xl border-4 border-[#0b2c4d] shadow-[0_6px_0_#08233d] p-3 flex flex-col h-80 lg:h-[500px]">
-      {/* Called Numbers Rack Strip */}
-      <div className="bg-[#f0f4f8] rounded-2xl p-2 border-2 border-slate-200 mb-2">
+    <div className="w-full lg:w-72 bg-white rounded-3xl border-4 border-[#0b2c4d] shadow-[0_8px_0_#08233d] p-3 flex flex-col h-auto lg:h-[530px]">
+      {/* Called Numbers Strip */}
+      <div className="bg-[#f0f4f8] rounded-2xl p-2 border-2 border-slate-300 mb-2">
         <div className="text-[10px] font-black uppercase tracking-wider text-slate-500 mb-1 flex justify-between">
-          <span>Called Numbers ({calledNumbers.length}/75)</span>
+          <span>Numbers Called ({calledNumbers.length}/25)</span>
           <span>Latest First</span>
         </div>
         <div className="flex items-center space-x-1.5 overflow-x-auto py-0.5 scrollbar-thin">
@@ -48,9 +48,9 @@ export function SkribblChat({ calledNumbers = [] }) {
             recentCalled.map((num, idx) => (
               <span
                 key={idx}
-                className={`flex-shrink-0 w-7 h-7 rounded-xl flex items-center justify-center font-black text-xs border-2 ${
+                className={`flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs border-2 ${
                   idx === 0
-                    ? 'bg-yellow-400 text-yellow-950 border-[#0b2c4d] animate-pop'
+                    ? 'bg-yellow-300 text-yellow-950 border-[#0b2c4d] shadow-sm animate-pop'
                     : 'bg-white text-[#0b2c4d] border-slate-300'
                 }`}
               >
@@ -67,7 +67,7 @@ export function SkribblChat({ calledNumbers = [] }) {
         className="flex-1 overflow-y-auto space-y-1.5 pr-1 mb-2 scrollbar-thin text-xs"
       >
         {messages.length === 0 ? (
-          <div className="text-center py-10 text-slate-400 italic">
+          <div className="text-center py-12 text-slate-400 italic font-semibold">
             Chat with players here! ✏️
           </div>
         ) : (
@@ -101,7 +101,7 @@ export function SkribblChat({ calledNumbers = [] }) {
         )}
       </div>
 
-      {/* Quick Emojis */}
+      {/* Quick Emoji Bar */}
       <div className="flex items-center space-x-1 mb-1.5 px-0.5">
         {['🎉', '🎯', '✏️', '🔥', '😱'].map((emoji) => (
           <button
@@ -123,14 +123,14 @@ export function SkribblChat({ calledNumbers = [] }) {
           onChange={(e) => setChatInput(e.target.value)}
           placeholder="Type your message here..."
           maxLength={150}
-          className="flex-1 bg-[#f4f7fa] border-2 border-slate-300 focus:border-[#0084ff] text-[#0b2c4d] placeholder-slate-400 rounded-xl px-2.5 py-1.5 text-xs font-bold focus:outline-none"
+          className="flex-1 bg-[#f4f7fa] border-2 border-slate-300 focus:border-[#0084ff] text-[#0b2c4d] placeholder-slate-400 rounded-xl px-2.5 py-2 text-xs font-bold focus:outline-none"
         />
         <button
           type="submit"
           disabled={!chatInput.trim() || isSending}
           className="skribbl-btn-blue p-2 rounded-xl text-white disabled:opacity-50"
         >
-          <Send className="w-3.5 h-3.5" />
+          <Send className="w-4 h-4" />
         </button>
       </form>
     </div>

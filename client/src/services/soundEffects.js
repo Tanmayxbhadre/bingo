@@ -22,6 +22,33 @@ class SoundEffects {
     return this.isMuted;
   }
 
+  // Your turn alert sound (cheerful two-tone chime)
+  playTurnAlert() {
+    if (this.isMuted) return;
+    this.init();
+    if (!this.ctx) return;
+
+    try {
+      const notes = [587.33, 880]; // D5, A5
+      notes.forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.1);
+
+        gain.gain.setValueAtTime(0.2, this.ctx.currentTime + idx * 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + idx * 0.1 + 0.2);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(this.ctx.currentTime + idx * 0.1);
+        osc.stop(this.ctx.currentTime + idx * 0.1 + 0.22);
+      });
+    } catch (e) {}
+  }
+
   // Quick UI button click pop
   playPop() {
     if (this.isMuted) return;

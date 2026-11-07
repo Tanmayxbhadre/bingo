@@ -34,3 +34,4 @@ export function SkribblLogo({ size = 'large' }) {
     </div>
   );
 }
+

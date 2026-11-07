@@ -2,9 +2,8 @@ import { GAME_CONFIG } from '../constants/gameConstants.js';
 
 export class BingoEngine {
   /**
-   * Generates a unique 5x5 card with 25 distinct numbers between 1 and 75.
-   * Returns a 25-element flat array of cell objects:
-   * { index, row, col, number, marked: false }
+   * Generates a 5x5 card with numbers 1 to 25 scrambled randomly.
+   * Every player gets all 25 numbers (1..25) in a different shuffled layout.
    */
   static generateCard() {
     const allNumbers = [];
@@ -18,9 +17,6 @@ export class BingoEngine {
       [allNumbers[i], allNumbers[j]] = [allNumbers[j], allNumbers[i]];
     }
 
-    // Pick first 25 unique numbers
-    const selected = allNumbers.slice(0, GAME_CONFIG.TOTAL_CELLS);
-
     const cells = [];
     let idx = 0;
     for (let row = 0; row < GAME_CONFIG.GRID_SIZE; row++) {
@@ -29,7 +25,7 @@ export class BingoEngine {
           index: idx,
           row,
           col,
-          number: selected[idx],
+          number: allNumbers[idx],
           marked: false,
         });
         idx++;
@@ -60,6 +56,11 @@ export class BingoEngine {
         return { valid: false, reason: `Duplicate number found: ${cell.number}` };
       }
       seen.add(cell.number);
+    }
+
+    // Verify all 1..25 numbers are present
+    if (seen.size !== 25) {
+      return { valid: false, reason: 'Card must contain all numbers from 1 to 25' };
     }
 
     return { valid: true };

@@ -223,9 +223,9 @@ export class Room {
     }
 
     if (!numberToCall) {
-      // Pick any uncalled 1..75
+      // Pick any uncalled 1..25
       const uncalled = [];
-      for (let i = 1; i <= 75; i++) {
+      for (let i = GAME_CONFIG.MIN_NUMBER; i <= GAME_CONFIG.MAX_NUMBER; i++) {
         if (!this.calledNumbersSet.has(i)) uncalled.push(i);
       }
       if (uncalled.length > 0) {
@@ -374,6 +374,38 @@ export class Room {
       completedLines: player.completedLines,
       isWinner: false,
     };
+  }
+
+  advanceTurn() {
+    if (this.turnOrder.length === 0) return;
+
+    // Filter active online players
+    const activeOnlineTokens = this.turnOrder.filter((tok) => {
+      const p = this.players.get(tok);
+      return p && p.isOnline && !p.isSpectator;
+    });
+
+    if (activeOnlineTokens.length === 0) return;
+
+    const currentIndex = activeOnlineTokens.indexOf(this.turnPlayerSessionToken);
+    const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % activeOnlineTokens.length;
+    this.currentTurnIndex = nextIndex;
+    this.turnPlayerSessionToken = activeOnlineTokens[nextIndex];
+    this.turnTimeRemaining = this.turnDurationSec;
+  }
+
+  pauseGame() {
+    if (this.status !== ROOM_STATUS.PLAYING) return false;
+    this.status = ROOM_STATUS.PAUSED;
+    this.clearTurnTimers();
+    return true;
+  }
+
+  resumeGame(onTurnTick, onAutoCall, onGameOver) {
+    if (this.status !== ROOM_STATUS.PAUSED) return false;
+    this.status = ROOM_STATUS.PLAYING;
+    this.startTurnTimer(onTurnTick, onAutoCall, onGameOver);
+    return true;
   }
 
   advanceTurn() {

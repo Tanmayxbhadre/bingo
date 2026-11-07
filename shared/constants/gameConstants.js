@@ -2,10 +2,10 @@ export const GAME_CONFIG = {
   GRID_SIZE: 5,
   TOTAL_CELLS: 25,
   MIN_NUMBER: 1,
-  MAX_NUMBER: 75,
+  MAX_NUMBER: 25, // All numbers are strictly between 1 and 25
   WINNING_LINE_COUNT: 5,
   TOTAL_POSSIBLE_LINES: 12, // 5 rows + 5 cols + 2 diagonals
-  DEFAULT_TURN_TIME_SEC: 45, // Time to call a number on your turn
+  DEFAULT_TURN_TIME_SEC: 45,
   DEFAULT_MAX_PLAYERS: 12,
   RECONNECT_GRACE_PERIOD_MS: 45000,
   CHAT_RATE_LIMIT_MS: 600,
@@ -40,9 +40,9 @@ export const SOCKET_EVENTS = {
   // Turn-based number calling & marking
   CALL_NUMBER: 'call_number', // Active turn player calls a number
   MARK_NUMBER: 'mark_number', // Opponents click to mark a called number on their card
-  NUMBER_CALLED: 'number_called', // Broadcast when a number is called
-  CELL_MARKED: 'cell_marked',     // Broadcast when a player marks a number
-  TURN_CHANGED: 'turn_changed',   // Broadcast whose turn it is now
+  NUMBER_CALLED: 'number_called',
+  CELL_MARKED: 'cell_marked',
+  TURN_CHANGED: 'turn_changed',
 
   // Chat
   CHAT_MESSAGE: 'chat_message',
@@ -51,7 +51,6 @@ export const SOCKET_EVENTS = {
   ERROR: 'error_message',
 };
 
-// skribbl.io style colorful avatars and customizable colors
 export const SKRIBBL_COLORS = [
   '#55b338', // Green
   '#0084ff', // Blue
