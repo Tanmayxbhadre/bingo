@@ -280,6 +280,22 @@ export function GameProvider({ children }) {
       if (!socketRef.current) return reject();
       sounds.playPop();
 
+      // Optimistic local update: mark caller's own cell immediately with 0ms delay!
+      setRoomState((prev) => {
+        if (!prev || !prev.myCard) return prev;
+        const updatedCard = prev.myCard.map((c) =>
+          c.number === number ? { ...c, marked: true } : c
+        );
+        return {
+          ...prev,
+          currentCalledNumber: number,
+          calledNumbers: prev.calledNumbers?.includes(number)
+            ? prev.calledNumbers
+            : [...(prev.calledNumbers || []), number],
+          myCard: updatedCard,
+        };
+      });
+
       socketRef.current.emit(SOCKET_EVENTS.CALL_NUMBER, { number }, (res) => {
         if (res?.success) {
           resolve(res);
@@ -296,6 +312,18 @@ export function GameProvider({ children }) {
     return new Promise((resolve, reject) => {
       if (!socketRef.current) return reject();
       sounds.playMark();
+
+      // Optimistic local update: mark cell immediately with 0ms delay!
+      setRoomState((prev) => {
+        if (!prev || !prev.myCard) return prev;
+        const updatedCard = prev.myCard.map((c) =>
+          c.number === number ? { ...c, marked: true } : c
+        );
+        return {
+          ...prev,
+          myCard: updatedCard,
+        };
+      });
 
       socketRef.current.emit(SOCKET_EVENTS.MARK_NUMBER, { number }, (res) => {
         if (res?.success) {

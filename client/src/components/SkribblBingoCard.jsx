@@ -18,14 +18,17 @@ export function SkribblBingoCard({
   const handleCellClick = (cell) => {
     if (cell.marked) return;
 
-    if (isMyTurn) {
-      // It's MY turn: clicking any unmarked cell calls this number!
-      sounds.playPop();
-      callNumber(cell.number);
-    } else if (calledSet.has(cell.number)) {
-      // Opponent called this number: clicking it marks it!
+    // 1. If this number has already been called by anyone, clicking it MARKS it!
+    if (calledSet.has(cell.number)) {
       sounds.playMark();
       markNumber(cell.number);
+      return;
+    }
+
+    // 2. If it's my turn and number has not been called, clicking it CALLS it!
+    if (isMyTurn) {
+      sounds.playPop();
+      callNumber(cell.number);
     }
   };
 
@@ -59,6 +62,7 @@ export function SkribblBingoCard({
             // In 1..25 mode, EVERY player has every called number!
             const isCalledToMark = !isMarked && calledSet.has(cell.number);
             const canCallThis = isMyTurn && !isMarked && !calledSet.has(cell.number);
+            const isClickable = !isMarked && (isCalledToMark || canCallThis);
 
             let cellClass = 'bg-[#f4f7fa] text-[#0b2c4d] border-3 border-[#0b2c4d] shadow-[0_3px_0_#0b2c4d]';
 
@@ -69,8 +73,8 @@ export function SkribblBingoCard({
               // Marked with skribbl crayon stamp
               cellClass = 'bg-slate-100 text-slate-400 border-2 border-slate-300 shadow-[0_2px_0_#cbd5e1]';
             } else if (isCalledToMark) {
-              // Opponent called this! Vibrant yellow bounce prompt to click!
-              cellClass = 'bg-yellow-300 hover:bg-yellow-400 text-yellow-950 font-black border-4 border-pink-500 shadow-[0_4px_0_#b38000] animate-bounce-subtle cursor-pointer ring-4 ring-pink-400 scale-102';
+              // Number was called! Vibrant pulsing yellow & pink ring alert to click and mark!
+              cellClass = 'bg-yellow-300 hover:bg-yellow-400 text-yellow-950 font-black border-4 border-pink-500 shadow-[0_4px_0_#b38000] ring-4 ring-pink-400 animate-pulse cursor-pointer scale-102';
             } else if (canCallThis) {
               // It's your turn to call
               cellClass = 'bg-emerald-50 hover:bg-emerald-100 text-emerald-950 font-black border-3 border-[#387c23] shadow-[0_3px_0_#285a19] cursor-pointer hover:scale-105';
@@ -81,7 +85,7 @@ export function SkribblBingoCard({
                 key={cell.index}
                 type="button"
                 onClick={() => handleCellClick(cell)}
-                disabled={isMarked || (!isMyTurn && !isCalledToMark)}
+                disabled={!isClickable}
                 className={`relative aspect-square rounded-2xl flex flex-col items-center justify-center select-none transition-all duration-150 active:translate-y-0.5 ${cellClass}`}
               >
                 {/* Number (Big & bold!) */}
@@ -117,11 +121,19 @@ export function SkribblBingoCard({
         </div>
       </div>
 
-      {/* Opponent Calling Helper Alert Banner */}
+      {/* Opponent Calling Helper Alert Banner - Clickable as well! */}
       {!isMyTurn && currentCalledNumber && hasCurrentCalledToMark && (
-        <div className="mt-2.5 inline-block bg-pink-500 text-white font-black text-xs sm:text-sm px-4 py-1.5 rounded-2xl shadow-[0_3px_0_#9f1239] animate-bounce-subtle">
-          👉 Click <span className="underline font-extrabold text-yellow-200">[{currentCalledNumber}]</span> on your card to cross it out!
-        </div>
+        <button
+          type="button"
+          onClick={() => {
+            sounds.playMark();
+            markNumber(currentCalledNumber);
+          }}
+          className="mt-2.5 inline-flex items-center space-x-1.5 bg-pink-500 hover:bg-pink-600 text-white font-black text-xs sm:text-sm px-4 py-2 rounded-2xl shadow-[0_4px_0_#9f1239] active:translate-y-0.5 transition-all cursor-pointer"
+        >
+          <span>👉</span>
+          <span>Click to Mark <span className="underline font-black text-yellow-200">[{currentCalledNumber}]</span> on your card!</span>
+        </button>
       )}
 
       {/* B-I-N-G-O 3D Toy Blocks (Large, Vibrant, Playful!) */}

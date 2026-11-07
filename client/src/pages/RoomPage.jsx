@@ -190,45 +190,84 @@ export function RoomPage() {
           </div>
         ) : (
           /* ==================== SKRIBBL 3-COLUMN GAMEPLAY VIEW ==================== */
-          <div className="flex flex-col lg:flex-row gap-3.5 items-stretch justify-center pt-1">
-            {/* Left Column: skribbl Player Table */}
-            <div className="w-full lg:w-60 flex-shrink-0">
-              <SkribblPlayerList />
+          <div className="flex flex-col pt-1">
+            {/* Mobile Tab Toggle Pills (visible only on mobile/tablet < lg) */}
+            <div className="flex lg:hidden items-center justify-center space-x-2 mb-2.5">
+              <button
+                type="button"
+                onClick={() => setMobileTab('card')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-black border-2 transition-all ${
+                  mobileTab === 'card'
+                    ? 'bg-yellow-400 text-yellow-950 border-[#0b2c4d] shadow-[0_3px_0_#08233d]'
+                    : 'bg-white/20 text-white border-white/20'
+                }`}
+              >
+                🎯 Bingo Card
+              </button>
+              <button
+                type="button"
+                onClick={() => setMobileTab('players')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-black border-2 transition-all ${
+                  mobileTab === 'players'
+                    ? 'bg-yellow-400 text-yellow-950 border-[#0b2c4d] shadow-[0_3px_0_#08233d]'
+                    : 'bg-white/20 text-white border-white/20'
+                }`}
+              >
+                👥 Players ({roomState.playerCount})
+              </button>
+              <button
+                type="button"
+                onClick={() => setMobileTab('chat')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-black border-2 transition-all ${
+                  mobileTab === 'chat'
+                    ? 'bg-yellow-400 text-yellow-950 border-[#0b2c4d] shadow-[0_3px_0_#08233d]'
+                    : 'bg-white/20 text-white border-white/20'
+                }`}
+              >
+                💬 Chat
+              </button>
             </div>
 
-            {/* Middle Column: Central Game Board & Action Banner */}
-            <div className="flex-1 w-full max-w-xl flex flex-col items-center space-y-2.5">
-              {/* Turn Callout Banner */}
-              <div className="w-full text-center">
-                {isMyTurn ? (
-                  <div className="bg-emerald-400 text-emerald-950 border-3 border-[#0b2c4d] shadow-[0_4px_0_#08233d] p-2.5 rounded-2xl font-black text-xs sm:text-sm animate-pulse">
-                    <span>✏️ YOUR TURN! Click any number on your card to call it!</span>
-                  </div>
-                ) : currentCalled ? (
-                  <div className="bg-yellow-300 text-yellow-950 border-3 border-[#0b2c4d] shadow-[0_4px_0_#08233d] p-2.5 rounded-2xl font-black text-xs sm:text-sm">
-                    <span>📢 {turnPlayerName} called [{currentCalled}]! Click {currentCalled} on your card to mark it!</span>
-                  </div>
-                ) : (
-                  <div className="bg-white text-[#0b2c4d] border-3 border-[#0b2c4d] shadow-[0_4px_0_#08233d] p-2.5 rounded-2xl font-black text-xs sm:text-sm">
-                    <span>⏳ Waiting for {turnPlayerName} to choose a number...</span>
-                  </div>
-                )}
+            <div className="flex flex-col lg:flex-row gap-3.5 items-stretch justify-center">
+              {/* Left Column: skribbl Player Table */}
+              <div className={`w-full lg:w-60 flex-shrink-0 ${mobileTab === 'players' ? 'block' : 'hidden lg:block'}`}>
+                <SkribblPlayerList />
               </div>
 
-              {/* 5x5 skribbl Bingo Card */}
-              <SkribblBingoCard
-                card={roomState.myCard}
-                isMyTurn={isMyTurn}
-                currentCalledNumber={currentCalled}
-                calledNumbers={roomState.calledNumbers}
-                winningCells={roomState.myWinningCells}
-                completedCount={roomState.myCompletedCount}
-              />
-            </div>
+              {/* Middle Column: Central Game Board & Action Banner */}
+              <div className={`flex-1 w-full max-w-xl flex flex-col items-center space-y-2.5 ${mobileTab === 'card' ? 'flex' : 'hidden lg:flex'}`}>
+                {/* Turn Callout Banner */}
+                <div className="w-full text-center">
+                  {isMyTurn ? (
+                    <div className="bg-emerald-400 text-emerald-950 border-3 border-[#0b2c4d] shadow-[0_4px_0_#08233d] p-2.5 rounded-2xl font-black text-xs sm:text-sm animate-pulse">
+                      <span>✏️ YOUR TURN! Click any number on your card to call it!</span>
+                    </div>
+                  ) : currentCalled ? (
+                    <div className="bg-yellow-300 text-yellow-950 border-3 border-[#0b2c4d] shadow-[0_4px_0_#08233d] p-2.5 rounded-2xl font-black text-xs sm:text-sm">
+                      <span>📢 {turnPlayerName} called [{currentCalled}]! Click {currentCalled} on your card to mark it!</span>
+                    </div>
+                  ) : (
+                    <div className="bg-white text-[#0b2c4d] border-3 border-[#0b2c4d] shadow-[0_4px_0_#08233d] p-2.5 rounded-2xl font-black text-xs sm:text-sm">
+                      <span>⏳ Waiting for {turnPlayerName} to choose a number...</span>
+                    </div>
+                  )}
+                </div>
 
-            {/* Right Column: skribbl Chat & Called Numbers */}
-            <div className="w-full lg:w-72 flex-shrink-0">
-              <SkribblChat calledNumbers={roomState.calledNumbers} />
+                {/* 5x5 skribbl Bingo Card */}
+                <SkribblBingoCard
+                  card={roomState.myCard}
+                  isMyTurn={isMyTurn}
+                  currentCalledNumber={currentCalled}
+                  calledNumbers={roomState.calledNumbers}
+                  winningCells={roomState.myWinningCells}
+                  completedCount={roomState.myCompletedCount}
+                />
+              </div>
+
+              {/* Right Column: skribbl Chat & Called Numbers */}
+              <div className={`w-full lg:w-72 flex-shrink-0 ${mobileTab === 'chat' ? 'block' : 'hidden lg:block'}`}>
+                <SkribblChat calledNumbers={roomState.calledNumbers} />
+              </div>
             </div>
           </div>
         )}

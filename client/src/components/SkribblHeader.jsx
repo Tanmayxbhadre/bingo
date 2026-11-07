@@ -89,6 +89,13 @@ export function SkribblHeader() {
                   <span>👉</span>
                   <span>IT'S YOUR TURN! Click any number on your card to call it!</span>
                 </>
+              ) : currentCalled ? (
+                <>
+                  <span>📢</span>
+                  <span>
+                    <span className="underline">{turnPlayerName}</span> called [ <span className="text-pink-600 font-extrabold">{currentCalled}</span> ]! Click it on your card!
+                  </span>
+                </>
               ) : (
                 <>
                   <span>⏳</span>
