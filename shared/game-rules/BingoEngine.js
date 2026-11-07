@@ -39,12 +39,6 @@ export class BingoEngine {
     return cells;
   }
 
-  /**
-   * Validate that a card structure conforms to rules:
-   * - Exactly 25 cells
-   * - All numbers between 1 and 75
-   * - No duplicate numbers
-   */
   static validateCard(cells) {
     if (!Array.isArray(cells) || cells.length !== GAME_CONFIG.TOTAL_CELLS) {
       return { valid: false, reason: 'Card must contain exactly 25 cells' };
@@ -71,10 +65,6 @@ export class BingoEngine {
     return { valid: true };
   }
 
-  /**
-   * Generates an array of all 12 line definitions:
-   * 5 rows, 5 cols, 2 diagonals
-   */
   static getLineDefinitions() {
     const lines = [];
 
@@ -84,7 +74,7 @@ export class BingoEngine {
       for (let c = 0; c < 5; c++) {
         cells.push(r * 5 + c);
       }
-      lines.push({ id: `row-${r}`, type: 'row', index: r, cells });
+      lines.push({ id: `row-${r}`, type: 'row', name: `Row ${r + 1}`, index: r, cells });
     }
 
     // 5 Columns
@@ -93,30 +83,26 @@ export class BingoEngine {
       for (let r = 0; r < 5; r++) {
         cells.push(r * 5 + c);
       }
-      lines.push({ id: `col-${c}`, type: 'col', index: c, cells });
+      lines.push({ id: `col-${c}`, type: 'col', name: `Column ${c + 1}`, index: c, cells });
     }
 
-    // Main diagonal (top-left to bottom-right: (0,0), (1,1), (2,2), (3,3), (4,4))
+    // Main diagonal
     const mainDiag = [];
     for (let i = 0; i < 5; i++) {
       mainDiag.push(i * 5 + i);
     }
-    lines.push({ id: 'diag-main', type: 'diagonal', name: 'Main Diagonal', cells: mainDiag });
+    lines.push({ id: 'diag-main', type: 'diagonal', name: 'Main Diagonal ↘', cells: mainDiag });
 
-    // Anti diagonal (top-right to bottom-left: (0,4), (1,3), (2,2), (3,1), (4,0))
+    // Anti diagonal
     const antiDiag = [];
     for (let i = 0; i < 5; i++) {
       antiDiag.push(i * 5 + (4 - i));
     }
-    lines.push({ id: 'diag-anti', type: 'diagonal', name: 'Anti Diagonal', cells: antiDiag });
+    lines.push({ id: 'diag-anti', type: 'diagonal', name: 'Anti Diagonal ↗', cells: antiDiag });
 
     return lines;
   }
 
-  /**
-   * Automatically marks a number on the card if present.
-   * Returns { marked: boolean, cellIndex: number | -1 }
-   */
   static markNumber(card, numberToMark) {
     const cell = card.find((c) => c.number === numberToMark);
     if (cell) {
@@ -126,17 +112,6 @@ export class BingoEngine {
     return { marked: false, cellIndex: -1 };
   }
 
-  /**
-   * Calculates all completed lines on a card.
-   * A line is complete when all 5 cells in that line are marked.
-   * Returns:
-   * {
-   *   completedLines: string[], // line IDs
-   *   completedCount: number,
-   *   winningCellIndices: number[],
-   *   isWinner: boolean
-   * }
-   */
   static evaluateLines(card) {
     const lineDefs = this.getLineDefinitions();
     const completedLines = [];
@@ -161,10 +136,32 @@ export class BingoEngine {
     };
   }
 
-  /**
-   * Authoritative verification of a player's card against all official drawn numbers.
-   * Ensures that no client marks numbers that were never officially drawn.
-   */
+  static canCallNumber(number, calledNumbersSet) {
+    if (
+      typeof number !== 'number' ||
+      number < GAME_CONFIG.MIN_NUMBER ||
+      number > GAME_CONFIG.MAX_NUMBER
+    ) {
+      return { valid: false, reason: `Number must be between ${GAME_CONFIG.MIN_NUMBER} and ${GAME_CONFIG.MAX_NUMBER}` };
+    }
+    if (calledNumbersSet.has(number)) {
+      return { valid: false, reason: `Number ${number} has already been called!` };
+    }
+    return { valid: true };
+  }
+
+  static createCallerPool() {
+    const pool = [];
+    for (let i = GAME_CONFIG.MIN_NUMBER; i <= GAME_CONFIG.MAX_NUMBER; i++) {
+      pool.push(i);
+    }
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    return pool;
+  }
+
   static verifyCardAuthoritative(card, calledNumbersSet) {
     const sanitizedCard = card.map((cell) => ({
       ...cell,
@@ -177,21 +174,5 @@ export class BingoEngine {
       sanitizedCard,
       ...evaluation,
     };
-  }
-
-  /**
-   * Initialize a fresh shuffled calling pool of numbers 1..75
-   */
-  static createCallerPool() {
-    const pool = [];
-    for (let i = GAME_CONFIG.MIN_NUMBER; i <= GAME_CONFIG.MAX_NUMBER; i++) {
-      pool.push(i);
-    }
-    // Shuffle
-    for (let i = pool.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [pool[i], pool[j]] = [pool[j], pool[i]];
-    }
-    return pool;
   }
 }

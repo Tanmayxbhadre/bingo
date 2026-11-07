@@ -69,3 +69,4 @@ export function BingoCard({ card, winningCells = [], lastMarkedIndex = null }) {
     </div>
   );
 }
+

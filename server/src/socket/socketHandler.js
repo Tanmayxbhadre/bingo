@@ -2,8 +2,6 @@ import { roomManager } from '../services/RoomManager.js';
 import { SOCKET_EVENTS, ROOM_STATUS } from '../../../shared/constants/gameConstants.js';
 
 export function setupSocketHandlers(io) {
-  // Broadcast updated room state to each individual socket in the room
-  // (ensuring each player gets their personal card while seeing shared public state)
   function broadcastRoomState(room) {
     for (const player of room.players.values()) {
       if (player.isOnline && player.socketId) {
@@ -27,7 +25,7 @@ export function setupSocketHandlers(io) {
             socketId: socket.id,
             sessionToken,
             name: name || 'Host',
-            avatar: avatar || '🦊',
+            avatar: avatar || '😃',
           },
           options || {}
         );
@@ -70,7 +68,7 @@ export function setupSocketHandlers(io) {
             name: player.name,
           });
         } else {
-          room.addSystemMessage(`${player.name} joined the lobby!`);
+          room.addSystemMessage(`${player.name} joined the game!`);
           io.to(room.code).emit(SOCKET_EVENTS.PLAYER_JOINED, {
             sessionToken: player.sessionToken,
             name: player.name,
@@ -114,28 +112,31 @@ export function setupSocketHandlers(io) {
           return callback?.({ success: false, error: 'Game is already running' });
         }
 
-        room.addSystemMessage('The game has started! First to 5 lines wins! 🎉');
+        const firstPlayer = room.players.get(room.turnPlayerSessionToken);
+        room.addSystemMessage('The game has started! Players take turns calling numbers. First to 5 lines wins! 🏆');
 
         room.startGame(
-          // onNumberCalled callback
-          (callResult) => {
+          // onTurnTick
+          (timeRemaining) => {
+            io.to(room.code).emit('turn_tick', { timeRemaining });
+          },
+          // onAutoCall
+          (autoCallResult) => {
+            room.addSystemMessage(`⏰ Time up! Auto-called ${autoCallResult.number}!`, 'call');
             io.to(room.code).emit(SOCKET_EVENTS.NUMBER_CALLED, {
-              number: callResult.number,
-              history: callResult.history,
-              playerUpdates: callResult.playerUpdates,
+              number: autoCallResult.number,
+              callerSessionToken: autoCallResult.callerSessionToken,
+              callerName: autoCallResult.callerName,
             });
             broadcastRoomState(room);
           },
-          // onGameOver callback
-          (gameResult) => {
-            io.to(room.code).emit(SOCKET_EVENTS.GAME_OVER, {
-              reason: gameResult.reason,
-              winner: gameResult.winner,
-              winners: gameResult.winners,
-              history: gameResult.history,
-            });
-            if (gameResult.winner) {
-              room.addSystemMessage(`🏆 BINGO! ${gameResult.winner.name} won with 5 completed lines!`);
+          // onGameOver
+          (gameOverResult) => {
+            if (gameOverResult.winner) {
+              room.addSystemMessage(`🎉 BINGO! ${gameOverResult.winner.name} completed 5 lines and won the game! 🏆`, 'win');
+              io.to(room.code).emit(SOCKET_EVENTS.GAME_OVER, {
+                winner: gameOverResult.winner,
+              });
             }
             broadcastRoomState(room);
           }
@@ -149,7 +150,89 @@ export function setupSocketHandlers(io) {
       }
     });
 
-    // 5. Pause Game (Host only)
+    // 5. CALL NUMBER (Active player calls a number on their turn)
+    socket.on(SOCKET_EVENTS.CALL_NUMBER, (payload, callback) => {
+      try {
+        const record = roomManager.getRoomBySocket(socket.id);
+        if (!record || !record.room) {
+          return callback?.({ success: false, error: 'Not in a room' });
+        }
+
+        const { room, sessionToken } = record;
+        const number = Number(payload?.number);
+
+        if (!number || isNaN(number)) {
+          return callback?.({ success: false, error: 'Invalid number' });
+        }
+
+        const result = room.callNumber(sessionToken, number);
+
+        // System announcement: Player called number!
+        room.addSystemMessage(`📢 ${result.callerName} called number ${result.number}! Click it on your card!`, 'call');
+
+        // Broadcast to everyone that the number has been called
+        io.to(room.code).emit(SOCKET_EVENTS.NUMBER_CALLED, {
+          number: result.number,
+          callerSessionToken: result.callerSessionToken,
+          callerName: result.callerName,
+          nextTurnSessionToken: result.nextTurnSessionToken,
+          nextTurnName: result.nextTurnName,
+        });
+
+        if (result.isWinner) {
+          room.addSystemMessage(`🎉 BINGO! ${result.winner.name} completed 5 lines and won! 🏆`, 'win');
+          io.to(room.code).emit(SOCKET_EVENTS.GAME_OVER, {
+            winner: result.winner,
+          });
+        }
+
+        callback?.({ success: true, result });
+        broadcastRoomState(room);
+      } catch (err) {
+        callback?.({ success: false, error: err.message });
+      }
+    });
+
+    // 6. MARK NUMBER (Opponents click a called number on their card)
+    socket.on(SOCKET_EVENTS.MARK_NUMBER, (payload, callback) => {
+      try {
+        const record = roomManager.getRoomBySocket(socket.id);
+        if (!record || !record.room) {
+          return callback?.({ success: false, error: 'Not in a room' });
+        }
+
+        const { room, sessionToken } = record;
+        const number = Number(payload?.number);
+        const player = room.players.get(sessionToken);
+
+        const result = room.markNumber(sessionToken, number);
+
+        if (result.marked) {
+          room.addSystemMessage(`✏️ ${player.name} marked number ${number}! (${result.completedCount}/5 lines)`, 'mark');
+
+          io.to(room.code).emit(SOCKET_EVENTS.CELL_MARKED, {
+            sessionToken,
+            playerName: player.name,
+            number,
+            completedCount: result.completedCount,
+          });
+        }
+
+        if (result.isWinner) {
+          room.addSystemMessage(`🎉 BINGO! ${result.winner.name} completed 5 lines and won! 🏆`, 'win');
+          io.to(room.code).emit(SOCKET_EVENTS.GAME_OVER, {
+            winner: result.winner,
+          });
+        }
+
+        callback?.({ success: true, result });
+        broadcastRoomState(room);
+      } catch (err) {
+        callback?.({ success: false, error: err.message });
+      }
+    });
+
+    // 7. Pause Game
     socket.on(SOCKET_EVENTS.PAUSE_GAME, (payload, callback) => {
       try {
         const record = roomManager.getRoomBySocket(socket.id);
@@ -170,7 +253,7 @@ export function setupSocketHandlers(io) {
       }
     });
 
-    // 6. Resume Game (Host only)
+    // 8. Resume Game
     socket.on(SOCKET_EVENTS.RESUME_GAME, (payload, callback) => {
       try {
         const record = roomManager.getRoomBySocket(socket.id);
@@ -181,24 +264,14 @@ export function setupSocketHandlers(io) {
         }
 
         const resumed = room.resumeGame(
-          (callResult) => {
-            io.to(room.code).emit(SOCKET_EVENTS.NUMBER_CALLED, {
-              number: callResult.number,
-              history: callResult.history,
-              playerUpdates: callResult.playerUpdates,
-            });
+          (timeRemaining) => io.to(room.code).emit('turn_tick', { timeRemaining }),
+          (autoCallResult) => {
+            room.addSystemMessage(`⏰ Auto-called ${autoCallResult.number}!`, 'call');
+            io.to(room.code).emit(SOCKET_EVENTS.NUMBER_CALLED, autoCallResult);
             broadcastRoomState(room);
           },
-          (gameResult) => {
-            io.to(room.code).emit(SOCKET_EVENTS.GAME_OVER, {
-              reason: gameResult.reason,
-              winner: gameResult.winner,
-              winners: gameResult.winners,
-              history: gameResult.history,
-            });
-            if (gameResult.winner) {
-              room.addSystemMessage(`🏆 BINGO! ${gameResult.winner.name} won!`);
-            }
+          (gameOverResult) => {
+            io.to(room.code).emit(SOCKET_EVENTS.GAME_OVER, gameOverResult);
             broadcastRoomState(room);
           }
         );
@@ -213,7 +286,7 @@ export function setupSocketHandlers(io) {
       }
     });
 
-    // 7. Play Again (Host only)
+    // 9. Play Again
     socket.on(SOCKET_EVENTS.PLAY_AGAIN, (payload, callback) => {
       try {
         const record = roomManager.getRoomBySocket(socket.id);
@@ -224,7 +297,7 @@ export function setupSocketHandlers(io) {
         }
 
         room.resetForNewGame();
-        room.addSystemMessage('New round ready! Host can start whenever everyone is set.');
+        room.addSystemMessage('New round ready! Host can start when everyone is ready.');
         callback?.({ success: true });
         broadcastRoomState(room);
       } catch (err) {
@@ -232,7 +305,7 @@ export function setupSocketHandlers(io) {
       }
     });
 
-    // 8. Live Chat Message
+    // 10. Live Chat Message
     socket.on(SOCKET_EVENTS.CHAT_MESSAGE, (payload, callback) => {
       try {
         const record = roomManager.getRoomBySocket(socket.id);
@@ -255,12 +328,12 @@ export function setupSocketHandlers(io) {
       }
     });
 
-    // 9. Leave Room explicitly
+    // 11. Leave Room
     socket.on(SOCKET_EVENTS.LEAVE_ROOM, () => {
       handleUserLeave(socket);
     });
 
-    // 10. Disconnect
+    // 12. Disconnect
     socket.on('disconnect', () => {
       handleUserLeave(socket, true);
     });
@@ -278,21 +351,18 @@ export function setupSocketHandlers(io) {
     const playerName = player ? player.name : 'A player';
 
     if (isDisconnect) {
-      // Allow grace period for reconnect
-      room.handleDisconnect(sessionToken, (expiredSessionToken) => {
+      room.handleDisconnect(sessionToken, () => {
         room.addSystemMessage(`${playerName} left the game (disconnected).`);
         broadcastRoomState(room);
       });
       room.addSystemMessage(`${playerName} lost connection.`);
       broadcastRoomState(room);
     } else {
-      // Explicit leave
       room.removePlayer(sessionToken);
       room.addSystemMessage(`${playerName} left the room.`);
       broadcastRoomState(room);
     }
 
-    // If room is completely empty, clean it up
     if (room.players.size === 0) {
       roomManager.deleteRoom(room.code);
     }

@@ -61,3 +61,4 @@ export function NumberCaller({ currentNumber, calledNumbers = [], callIntervalSe
     </div>
   );
 }
+

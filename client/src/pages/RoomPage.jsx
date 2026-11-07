@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Crown, Play, Copy, Check, Users, Share2, Sparkles, AlertCircle } from 'lucide-react';
+import { Play, Copy, Check, Users, Share2, Crown, Sparkles, Volume2, VolumeX } from 'lucide-react';
 import { useGame } from '../context/GameContext.jsx';
-import { Header } from '../components/Header.jsx';
-import { BingoCard } from '../components/BingoCard.jsx';
-import { NumberCaller } from '../components/NumberCaller.jsx';
-import { LineProgress } from '../components/LineProgress.jsx';
-import { PlayerSidebar } from '../components/PlayerSidebar.jsx';
+import { SkribblHeader } from '../components/SkribblHeader.jsx';
+import { SkribblBingoCard } from '../components/SkribblBingoCard.jsx';
+import { SkribblPlayerList } from '../components/SkribblPlayerList.jsx';
+import { SkribblChat } from '../components/SkribblChat.jsx';
 import { WinnerModal } from '../components/WinnerModal.jsx';
 import { ROOM_STATUS } from '@shared/constants/gameConstants.js';
 import { sounds } from '../services/soundEffects.js';
@@ -20,23 +19,18 @@ export function RoomPage() {
     startGame,
     connected,
     sessionToken,
-    lastMarkedCell,
     error,
   } = useGame();
 
   const [copied, setCopied] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
 
-  // If user lands directly on /room/:code without joining yet, join automatically
   useEffect(() => {
     if (!roomState && roomCode && connected) {
-      joinRoom(roomCode).catch((err) => {
-        // failed to join
-      });
+      joinRoom(roomCode).catch(() => {});
     }
   }, [roomCode, roomState, connected]);
 
-  // If user has left room or room was deleted
   useEffect(() => {
     if (!roomState && !roomCode) {
       navigate('/');
@@ -65,103 +59,104 @@ export function RoomPage() {
   if (!roomState) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4 text-white">
-        <Header />
-        <div className="my-auto text-center space-y-3 bg-white/10 p-8 rounded-3xl border border-white/15 backdrop-blur-md">
-          <div className="text-4xl animate-bounce">🎯</div>
-          <h2 className="text-2xl font-bold">Connecting to Room {roomCode}...</h2>
-          <p className="text-slate-300 text-sm">Please wait while we set up your 5×5 card.</p>
-          {error && <p className="text-rose-400 font-bold text-xs">{error}</p>}
+        <div className="text-center space-y-3 bg-white rounded-3xl border-4 border-[#0b2c4d] shadow-[0_8px_0_#08233d] p-8 text-[#0b2c4d] max-w-sm w-full">
+          <div className="text-5xl animate-bounce">🎯</div>
+          <h2 className="text-2xl font-black">Joining Room {roomCode}...</h2>
+          <p className="text-slate-500 font-bold text-xs">Getting your 5×5 card ready!</p>
+          {error && <p className="text-rose-500 font-black text-xs">{error}</p>}
         </div>
       </div>
     );
   }
 
   const isLobby = roomState.status === ROOM_STATUS.LOBBY;
+  const isMyTurn = roomState.isMyTurn;
+  const turnPlayerName = roomState.turnPlayerName || 'Opponent';
+  const currentCalled = roomState.currentCalledNumber;
 
   return (
     <div className="min-h-screen flex flex-col justify-between">
-      {/* Top Navigation Header */}
-      <Header />
+      {/* skribbl.io Top Bar Header */}
+      <SkribblHeader />
 
-      <main className="flex-1 max-w-7xl mx-auto w-full p-3 sm:p-5 lg:p-6">
+      <main className="flex-1 max-w-7xl mx-auto w-full p-2 sm:p-4">
         {isLobby ? (
-          /* ==================== LOBBY VIEW ==================== */
-          <div className="max-w-3xl mx-auto space-y-6 animate-pop">
-            {/* Room Invitation Card */}
-            <div className="bg-white/10 backdrop-blur-xl border-2 border-white/20 rounded-3xl p-6 sm:p-8 text-center text-white shadow-2xl">
-              <span className="text-xs uppercase tracking-widest font-black text-yellow-300">
-                Multiplayer Lobby
-              </span>
+          /* ==================== SKRIBBL LOBBY VIEW ==================== */
+          <div className="max-w-2xl mx-auto space-y-4 animate-pop my-auto pt-4">
+            <div className="bg-white rounded-3xl border-4 border-[#0b2c4d] shadow-[0_8px_0_#08233d] p-5 sm:p-7 text-center text-[#0b2c4d]">
+              <div className="text-xs font-black uppercase text-slate-400 tracking-wider">
+                skribbl.io Game Lobby
+              </div>
               <h2 className="text-2xl sm:text-3xl font-black mt-1 mb-3">
                 Waiting for Players to Join
               </h2>
 
-              {/* Big Room Code Display */}
-              <div className="inline-flex items-center space-x-3 bg-black/30 border-2 border-white/20 px-6 py-3 rounded-2xl mb-4">
-                <span className="text-slate-300 text-xs font-bold uppercase">Room Code:</span>
-                <span className="font-mono text-3xl sm:text-4xl font-black text-yellow-300 tracking-wider">
+              {/* Big Room Code Box */}
+              <div className="inline-flex items-center space-x-3 bg-[#f0f4f8] border-3 border-[#0b2c4d] px-5 py-2.5 rounded-2xl mb-3">
+                <span className="text-xs font-black uppercase text-slate-500">Room Code:</span>
+                <span className="font-mono text-3xl font-black text-[#0084ff] tracking-wider">
                   {roomState.roomCode}
                 </span>
                 <button
                   onClick={handleCopyLink}
-                  className="bg-white/20 hover:bg-white/30 p-2 rounded-xl text-white transition-all active:scale-95 ml-2"
-                  title="Copy Invitation Link"
+                  className="bg-white hover:bg-slate-100 p-2 rounded-xl border-2 border-[#0b2c4d] transition-all active:scale-95"
+                  title="Copy Link"
                 >
-                  {copied ? <Check className="w-5 h-5 text-emerald-300" /> : <Copy className="w-5 h-5" />}
+                  {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4 text-[#0b2c4d]" />}
                 </button>
               </div>
 
-              <div className="flex flex-wrap items-center justify-center gap-3">
+              <div className="flex items-center justify-center space-x-3 text-xs font-bold text-slate-600">
                 <button
                   onClick={handleCopyLink}
-                  className="bg-white/15 hover:bg-white/25 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center space-x-1.5 transition-colors"
+                  className="skribbl-btn-blue px-3 py-1.5 rounded-xl text-xs flex items-center space-x-1"
                 >
-                  <Share2 className="w-4 h-4" />
-                  <span>{copied ? 'Link Copied!' : 'Copy Share Link'}</span>
+                  <Share2 className="w-3.5 h-3.5" />
+                  <span>{copied ? 'Copied!' : 'Copy Invite Link'}</span>
                 </button>
-                <div className="text-xs text-slate-300">
-                  Calling Speed: <span className="font-bold text-yellow-300">{roomState.callIntervalSec}s</span>
-                </div>
+                <span>Turn Timer: <span className="text-[#0084ff] font-black">{roomState.turnDurationSec}s</span></span>
               </div>
             </div>
 
-            {/* Players Grid in Lobby */}
-            <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-3xl p-5 sm:p-6 text-white shadow-xl">
-              <div className="flex items-center justify-between mb-4 border-b border-white/10 pb-3">
-                <div className="flex items-center space-x-2">
-                  <Users className="w-5 h-5 text-yellow-300" />
-                  <h3 className="font-extrabold text-base">Connected Players ({roomState.playerCount})</h3>
-                </div>
-                <span className="text-xs text-slate-300">
+            {/* Players in Lobby Grid */}
+            <div className="bg-white rounded-3xl border-4 border-[#0b2c4d] shadow-[0_6px_0_#08233d] p-4 sm:p-5">
+              <div className="flex items-center justify-between pb-2 border-b-2 border-slate-200 mb-3 px-1">
+                <span className="font-black text-sm text-[#0b2c4d] uppercase tracking-wide">
+                  Connected Players ({roomState.playerCount})
+                </span>
+                <span className="text-xs font-bold text-slate-500">
                   Max: {roomState.maxPlayers}
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                 {roomState.players.map((p) => {
                   const isMe = p.sessionToken === sessionToken;
                   return (
                     <div
                       key={p.sessionToken}
-                      className={`flex flex-col items-center p-4 rounded-2xl border transition-all ${
-                        isMe
-                          ? 'bg-white/25 border-yellow-300/80 shadow-md scale-102'
-                          : 'bg-white/10 border-white/10'
+                      className={`flex flex-col items-center p-3 rounded-2xl border-2 transition-all ${
+                        isMe ? 'bg-blue-50 border-blue-400' : 'bg-slate-50 border-slate-200'
                       }`}
                     >
-                      <div className="text-4xl mb-2 drop-shadow-sm">{p.avatar}</div>
-                      <div className="font-bold text-sm text-center truncate max-w-full">
-                        {p.name}
+                      <div
+                        className="w-12 h-12 rounded-2xl border-2 border-[#0b2c4d] flex items-center justify-center text-3xl mb-1 shadow-sm"
+                        style={{ backgroundColor: p.color || '#55b338' }}
+                      >
+                        {p.avatar}
                       </div>
-                      <div className="flex items-center space-x-1 mt-1">
+                      <span className="font-extrabold text-xs text-[#0b2c4d] truncate max-w-full">
+                        {p.name}
+                      </span>
+                      <div className="flex items-center space-x-1 mt-0.5">
                         {p.isHost && (
-                          <span className="bg-yellow-400 text-yellow-950 text-[10px] font-black px-1.5 py-0.2 rounded flex items-center space-x-0.5">
+                          <span className="bg-yellow-400 text-yellow-950 text-[9px] font-black px-1.5 py-0.2 rounded border border-yellow-600 flex items-center space-x-0.5">
                             <Crown className="w-2.5 h-2.5 fill-yellow-950" />
                             <span>HOST</span>
                           </span>
                         )}
                         {isMe && (
-                          <span className="bg-pink-500 text-white text-[10px] font-black px-1.5 py-0.2 rounded">
+                          <span className="bg-[#0084ff] text-white text-[9px] font-black px-1.5 py-0.2 rounded">
                             YOU
                           </span>
                         )}
@@ -172,54 +167,66 @@ export function RoomPage() {
               </div>
             </div>
 
-            {/* Host Start Game Action or Waiting Notice */}
+            {/* Start Game Action */}
             <div className="text-center pt-2">
               {roomState.isHost ? (
                 <button
                   onClick={handleStartGame}
                   disabled={isStarting}
-                  className="bg-gradient-to-r from-emerald-400 to-green-500 hover:from-emerald-300 hover:to-green-400 text-emerald-950 font-black text-lg py-4 px-10 rounded-2xl shadow-bouncy active:translate-y-1 transition-all inline-flex items-center space-x-2"
+                  className="skribbl-btn-green py-3 px-10 rounded-2xl text-xl inline-flex items-center space-x-2 tracking-wide"
                 >
-                  <Play className="w-6 h-6 fill-emerald-950" />
-                  <span>{isStarting ? 'Starting...' : 'Start Game Now!'}</span>
+                  <Play className="w-5 h-5 fill-white" />
+                  <span>{isStarting ? 'Starting...' : 'Start Game!'}</span>
                 </button>
               ) : (
-                <div className="bg-white/10 backdrop-blur-md px-6 py-4 rounded-2xl inline-block border border-white/15 text-white animate-pulse">
-                  <span className="font-bold text-sm">
-                    ⏳ Waiting for the room host to start the game...
-                  </span>
+                <div className="bg-white/10 text-white font-extrabold text-sm py-3 px-6 rounded-2xl border-2 border-white/20 inline-block animate-pulse">
+                  ⏳ Waiting for the room host to start the game...
                 </div>
               )}
             </div>
           </div>
         ) : (
-          /* ==================== ACTIVE GAMEPLAY VIEW ==================== */
-          <div className="flex flex-col lg:flex-row gap-5 items-start justify-center">
-            {/* Left / Center Area: Bingo Board & Callers */}
-            <div className="flex-1 w-full space-y-4">
-              {/* Prominent Number Caller Component */}
-              <NumberCaller
-                currentNumber={roomState.currentNumber}
-                calledNumbers={roomState.calledNumbers}
-                callIntervalSec={roomState.callIntervalSec}
-              />
+          /* ==================== SKRIBBL 3-COLUMN GAMEPLAY VIEW ==================== */
+          <div className="flex flex-col lg:flex-row gap-3 items-start justify-center pt-1">
+            {/* Left Column: skribbl Player Table */}
+            <div className="w-full lg:w-auto order-2 lg:order-1">
+              <SkribblPlayerList />
+            </div>
 
-              {/* 5-Line Progress Bar */}
-              <LineProgress
-                completedCount={roomState.myCompletedCount}
-                completedLines={roomState.myCompletedLines}
-              />
+            {/* Middle Column: Central Game Board & Action Banner */}
+            <div className="flex-1 w-full flex flex-col items-center space-y-3 order-1 lg:order-2">
+              {/* Turn Callout Banner */}
+              <div className="w-full max-w-xl text-center">
+                {isMyTurn ? (
+                  <div className="bg-emerald-400 text-emerald-950 border-3 border-[#0b2c4d] shadow-[0_4px_0_#08233d] p-2.5 rounded-2xl font-black text-xs sm:text-sm animate-pulse">
+                    <span>✏️ YOUR TURN! Click any number on your card to call it!</span>
+                  </div>
+                ) : currentCalled ? (
+                  <div className="bg-amber-300 text-amber-950 border-3 border-[#0b2c4d] shadow-[0_4px_0_#08233d] p-2.5 rounded-2xl font-black text-xs sm:text-sm">
+                    <span>📢 {turnPlayerName} called [{currentCalled}]! Click {currentCalled} on your card to mark it!</span>
+                  </div>
+                ) : (
+                  <div className="bg-white text-[#0b2c4d] border-3 border-[#0b2c4d] shadow-[0_4px_0_#08233d] p-2.5 rounded-2xl font-black text-xs sm:text-sm">
+                    <span>⏳ Waiting for {turnPlayerName} to choose a number...</span>
+                  </div>
+                )}
+              </div>
 
-              {/* Authoritative 5×5 Bingo Card */}
-              <BingoCard
+              {/* 5x5 skribbl Bingo Card */}
+              <SkribblBingoCard
                 card={roomState.myCard}
+                isMyTurn={isMyTurn}
+                currentCalledNumber={currentCalled}
+                calledNumbers={roomState.calledNumbers}
                 winningCells={roomState.myWinningCells}
-                lastMarkedIndex={lastMarkedCell}
+                completedCount={roomState.myCompletedCount}
               />
             </div>
 
-            {/* Right Area: Player List & Live Chat */}
-            <PlayerSidebar />
+            {/* Right Column: skribbl Chat & Called Numbers */}
+            <div className="w-full lg:w-auto order-3">
+              <SkribblChat calledNumbers={roomState.calledNumbers} />
+            </div>
           </div>
         )}
       </main>

@@ -5,12 +5,10 @@ export const GAME_CONFIG = {
   MAX_NUMBER: 75,
   WINNING_LINE_COUNT: 5,
   TOTAL_POSSIBLE_LINES: 12, // 5 rows + 5 cols + 2 diagonals
-  DEFAULT_CALL_INTERVAL_SEC: 4,
-  MIN_CALL_INTERVAL_SEC: 2,
-  MAX_CALL_INTERVAL_SEC: 10,
+  DEFAULT_TURN_TIME_SEC: 45, // Time to call a number on your turn
   DEFAULT_MAX_PLAYERS: 12,
-  RECONNECT_GRACE_PERIOD_MS: 45000, // 45 seconds to reconnect
-  CHAT_RATE_LIMIT_MS: 800,
+  RECONNECT_GRACE_PERIOD_MS: 45000,
+  CHAT_RATE_LIMIT_MS: 600,
   ROOM_CODE_LENGTH: 6,
 };
 
@@ -31,40 +29,51 @@ export const SOCKET_EVENTS = {
   PLAYER_LEFT: 'player_left',
   PLAYER_RECONNECTED: 'player_reconnected',
   LIST_PUBLIC_ROOMS: 'list_public_rooms',
-  PUBLIC_ROOMS_LIST: 'public_rooms_list',
 
   // Game flow
   START_GAME: 'game_start',
   PAUSE_GAME: 'game_pause',
   RESUME_GAME: 'game_resume',
-  NUMBER_CALLED: 'number_called',
   GAME_OVER: 'game_over',
   PLAY_AGAIN: 'play_again',
 
-  // Player state
-  CARD_UPDATE: 'card_update',
-  PLAYER_WON: 'player_won',
+  // Turn-based number calling & marking
+  CALL_NUMBER: 'call_number', // Active turn player calls a number
+  MARK_NUMBER: 'mark_number', // Opponents click to mark a called number on their card
+  NUMBER_CALLED: 'number_called', // Broadcast when a number is called
+  CELL_MARKED: 'cell_marked',     // Broadcast when a player marks a number
+  TURN_CHANGED: 'turn_changed',   // Broadcast whose turn it is now
 
   // Chat
   CHAT_MESSAGE: 'chat_message',
 
-  // System / Error
+  // System
   ERROR: 'error_message',
-  PING: 'ping_check',
-  PONG: 'pong_check',
 };
 
+// skribbl.io style colorful avatars and customizable colors
+export const SKRIBBL_COLORS = [
+  '#55b338', // Green
+  '#0084ff', // Blue
+  '#ff4500', // Orange-Red
+  '#ffb703', // Yellow
+  '#9b5de5', // Purple
+  '#f15bb5', // Pink
+  '#00bbcb', // Teal
+  '#8338ec', // Violet
+];
+
 export const AVATARS = [
-  { id: 'fox', emoji: '🦊', label: 'Speedy Fox', bg: 'bg-orange-100 border-orange-400' },
-  { id: 'panda', emoji: '🐼', label: 'Chill Panda', bg: 'bg-emerald-100 border-emerald-400' },
-  { id: 'lion', emoji: '🦁', label: 'Brave Lion', bg: 'bg-amber-100 border-amber-400' },
-  { id: 'bunny', emoji: '🐰', label: 'Lucky Bunny', bg: 'bg-pink-100 border-pink-400' },
-  { id: 'cat', emoji: '🐱', label: 'Curious Cat', bg: 'bg-purple-100 border-purple-400' },
-  { id: 'dog', emoji: '🐶', label: 'Happy Pup', bg: 'bg-blue-100 border-blue-400' },
-  { id: 'bear', emoji: '🐻', label: 'Cozy Bear', bg: 'bg-amber-200 border-amber-500' },
-  { id: 'koala', emoji: '🐨', label: 'Sleepy Koala', bg: 'bg-teal-100 border-teal-400' },
-  { id: 'frog', emoji: '🐸', label: 'Jumpy Frog', bg: 'bg-green-100 border-green-400' },
-  { id: 'unicorn', emoji: '🦄', label: 'Magic Horn', bg: 'bg-fuchsia-100 border-fuchsia-400' },
-  { id: 'dragon', emoji: '🐲', label: 'Fire Drake', bg: 'bg-rose-100 border-rose-400' },
-  { id: 'penguin', emoji: '🐧', label: 'Cool Penguin', bg: 'bg-sky-100 border-sky-400' },
+  { id: 'happy', emoji: '😃', label: 'Happy', color: '#ffb703' },
+  { id: 'cool', emoji: '😎', label: 'Cool', color: '#0084ff' },
+  { id: 'wink', emoji: '😉', label: 'Wink', color: '#55b338' },
+  { id: 'dizzy', emoji: '😵', label: 'Dizzy', color: '#9b5de5' },
+  { id: 'nerd', emoji: '🤓', label: 'Nerd', color: '#ff4500' },
+  { id: 'star', emoji: '🤩', label: 'Starry', color: '#ffb703' },
+  { id: 'surprised', emoji: '😮', label: 'Surprised', color: '#00bbcb' },
+  { id: 'love', emoji: '😍', label: 'Love', color: '#f15bb5' },
+  { id: 'smug', emoji: '😏', label: 'Smug', color: '#55b338' },
+  { id: 'party', emoji: '🥳', label: 'Party', color: '#ff8c00' },
+  { id: 'sleepy', emoji: '😴', label: 'Sleepy', color: '#8338ec' },
+  { id: 'clown', emoji: '🤡', label: 'Joker', color: '#ff4500' },
 ];

@@ -1,12 +1,11 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { io } from 'socket.io-client';
-import { SOCKET_EVENTS } from '@shared/constants/gameConstants.js';
+import { SOCKET_EVENTS, AVATARS, SKRIBBL_COLORS } from '@shared/constants/gameConstants.js';
 import { sounds } from '../services/soundEffects.js';
 
 const GameContext = createContext(null);
 
 export function GameProvider({ children }) {
-  // Session Token persistence
   const [sessionToken, setSessionToken] = useState(() => {
     let token = sessionStorage.getItem('bingo_session_token');
     if (!token) {
@@ -16,18 +15,25 @@ export function GameProvider({ children }) {
     return token;
   });
 
-  const [name, setName] = useState(() => localStorage.getItem('bingo_name') || 'LuckyPlayer');
-  const [avatar, setAvatar] = useState(() => localStorage.getItem('bingo_avatar') || '🦊');
+  const [name, setName] = useState(() => localStorage.getItem('bingo_name') || 'Player');
+  const [avatarIndex, setAvatarIndex] = useState(() => {
+    const saved = localStorage.getItem('bingo_avatar_idx');
+    return saved !== null ? Number(saved) : 0;
+  });
+  const [avatarColor, setAvatarColor] = useState(() => localStorage.getItem('bingo_avatar_color') || SKRIBBL_COLORS[0]);
+
   const [roomState, setRoomState] = useState(null);
   const [publicRooms, setPublicRooms] = useState([]);
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState(null);
   const [isMuted, setIsMuted] = useState(sounds.isMuted);
-  const [lastMarkedCell, setLastMarkedCell] = useState(null);
+  const [turnTime, setTurnTime] = useState(45);
+  const [lastMarkedNumber, setLastMarkedNumber] = useState(null);
 
   const socketRef = useRef(null);
 
-  // Initialize Socket.IO connection
+  const currentAvatar = AVATARS[avatarIndex] || AVATARS[0];
+
   useEffect(() => {
     const serverUrl = import.meta.env.VITE_SERVER_URL || window.location.origin;
     const socket = io(serverUrl, {
@@ -47,37 +53,38 @@ export function GameProvider({ children }) {
       setConnected(false);
     });
 
-    // Room updated
     socket.on(SOCKET_EVENTS.ROOM_UPDATED, (updatedState) => {
       setRoomState(updatedState);
-    });
-
-    // Number called
-    socket.on(SOCKET_EVENTS.NUMBER_CALLED, (data) => {
-      sounds.playNumberCall();
-      if (data.playerUpdates) {
-        const myUpdate = data.playerUpdates.find((p) => p.sessionToken === sessionToken);
-        if (myUpdate && myUpdate.numberMarked) {
-          sounds.playMark();
-          setLastMarkedCell(myUpdate.cellIndex);
-          setTimeout(() => setLastMarkedCell(null), 1200);
-        }
+      if (updatedState.turnTimeRemaining !== undefined) {
+        setTurnTime(updatedState.turnTimeRemaining);
       }
     });
 
-    // Player joined
+    socket.on('turn_tick', ({ timeRemaining }) => {
+      setTurnTime(timeRemaining);
+    });
+
+    // When opponent or caller calls a number
+    socket.on(SOCKET_EVENTS.NUMBER_CALLED, (data) => {
+      sounds.playNumberCall();
+      setLastMarkedNumber(data.number);
+    });
+
+    // When a cell is marked
+    socket.on(SOCKET_EVENTS.CELL_MARKED, (data) => {
+      sounds.playMark();
+    });
+
     socket.on(SOCKET_EVENTS.PLAYER_JOINED, () => {
       sounds.playJoin();
     });
 
-    // Game over / Winner
     socket.on(SOCKET_EVENTS.GAME_OVER, (data) => {
       if (data.winner) {
         sounds.playWin();
       }
     });
 
-    // Chat message received
     socket.on(SOCKET_EVENTS.CHAT_MESSAGE, (msg) => {
       setRoomState((prev) => {
         if (!prev) return prev;
@@ -95,15 +102,19 @@ export function GameProvider({ children }) {
     };
   }, [sessionToken]);
 
-  const updateProfile = (newName, newAvatar) => {
-    if (newName) {
+  const updateProfile = (newName, newAvatarIdx, newColor) => {
+    if (newName !== undefined) {
       const trimmed = newName.slice(0, 16);
       setName(trimmed);
       localStorage.setItem('bingo_name', trimmed);
     }
-    if (newAvatar) {
-      setAvatar(newAvatar);
-      localStorage.setItem('bingo_avatar', newAvatar);
+    if (newAvatarIdx !== undefined) {
+      setAvatarIndex(newAvatarIdx);
+      localStorage.setItem('bingo_avatar_idx', String(newAvatarIdx));
+    }
+    if (newColor !== undefined) {
+      setAvatarColor(newColor);
+      localStorage.setItem('bingo_avatar_color', newColor);
     }
   };
 
@@ -122,8 +133,9 @@ export function GameProvider({ children }) {
         SOCKET_EVENTS.CREATE_ROOM,
         {
           sessionToken,
-          name,
-          avatar,
+          name: name.trim() || 'Player',
+          avatar: currentAvatar.emoji,
+          color: avatarColor,
           options,
         },
         (res) => {
@@ -149,8 +161,9 @@ export function GameProvider({ children }) {
         {
           roomCode: code.toUpperCase().trim(),
           sessionToken,
-          name,
-          avatar,
+          name: name.trim() || 'Player',
+          avatar: currentAvatar.emoji,
+          color: avatarColor,
         },
         (res) => {
           if (res?.success) {
@@ -185,17 +198,43 @@ export function GameProvider({ children }) {
     });
   };
 
-  const pauseGame = () => {
-    socketRef.current?.emit(SOCKET_EVENTS.PAUSE_GAME);
+  // Call number (when it's your turn)
+  const callNumber = (number) => {
+    return new Promise((resolve, reject) => {
+      if (!socketRef.current) return reject();
+      sounds.playPop();
+
+      socketRef.current.emit(SOCKET_EVENTS.CALL_NUMBER, { number }, (res) => {
+        if (res?.success) {
+          resolve(res);
+        } else {
+          setError(res?.error || 'Could not call number');
+          reject(new Error(res?.error));
+        }
+      });
+    });
   };
 
-  const resumeGame = () => {
-    socketRef.current?.emit(SOCKET_EVENTS.RESUME_GAME);
+  // Mark number (opponent clicked called number on their card)
+  const markNumber = (number) => {
+    return new Promise((resolve, reject) => {
+      if (!socketRef.current) return reject();
+      sounds.playMark();
+
+      socketRef.current.emit(SOCKET_EVENTS.MARK_NUMBER, { number }, (res) => {
+        if (res?.success) {
+          resolve(res);
+        } else {
+          setError(res?.error || 'Could not mark number');
+          reject(new Error(res?.error));
+        }
+      });
+    });
   };
 
-  const playAgain = () => {
-    socketRef.current?.emit(SOCKET_EVENTS.PLAY_AGAIN);
-  };
+  const pauseGame = () => socketRef.current?.emit(SOCKET_EVENTS.PAUSE_GAME);
+  const resumeGame = () => socketRef.current?.emit(SOCKET_EVENTS.RESUME_GAME);
+  const playAgain = () => socketRef.current?.emit(SOCKET_EVENTS.PLAY_AGAIN);
 
   const sendChatMessage = (text) => {
     return new Promise((resolve, reject) => {
@@ -221,7 +260,9 @@ export function GameProvider({ children }) {
       value={{
         sessionToken,
         name,
-        avatar,
+        avatarIndex,
+        avatarColor,
+        currentAvatar,
         updateProfile,
         roomState,
         publicRooms,
@@ -230,11 +271,14 @@ export function GameProvider({ children }) {
         clearError: () => setError(null),
         isMuted,
         toggleSound,
-        lastMarkedCell,
+        turnTime,
+        lastMarkedNumber,
         createRoom,
         joinRoom,
         leaveRoom,
         startGame,
+        callNumber,
+        markNumber,
         pauseGame,
         resumeGame,
         playAgain,

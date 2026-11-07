@@ -116,3 +116,4 @@ export function WinnerModal({ winner, onClose }) {
     </div>
   );
 }
+

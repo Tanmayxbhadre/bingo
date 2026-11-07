@@ -4,24 +4,77 @@
 
 @layer base {
   body {
-    @apply m-0 p-0 overflow-x-hidden;
-    font-family: 'Fredoka', cursive, system-ui, sans-serif;
+    @apply m-0 p-0 overflow-x-hidden text-slate-900;
+    font-family: 'Fredoka', 'Comic Neue', cursive, system-ui, sans-serif;
+    background-color: #0e3860;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.08) 2px, transparent 2px);
+    background-size: 24px 24px;
+    min-height: 100vh;
   }
 }
 
-/* Custom scrollbar for chat and number history */
+/* skribbl.io cartoon buttons */
+.skribbl-btn-green {
+  background-color: #55b338;
+  border: 3px solid #387c23;
+  box-shadow: 0 5px 0 0 #285a19;
+  color: #ffffff;
+  font-weight: 800;
+  transition: all 0.1s ease;
+}
+.skribbl-btn-green:hover {
+  background-color: #60c640;
+}
+.skribbl-btn-green:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 0 #285a19;
+}
+
+.skribbl-btn-blue {
+  background-color: #0084ff;
+  border: 3px solid #005bb5;
+  box-shadow: 0 5px 0 0 #00458a;
+  color: #ffffff;
+  font-weight: 800;
+  transition: all 0.1s ease;
+}
+.skribbl-btn-blue:hover {
+  background-color: #1a90ff;
+}
+.skribbl-btn-blue:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 0 #00458a;
+}
+
+.skribbl-btn-orange {
+  background-color: #ff8c00;
+  border: 3px solid #b86500;
+  box-shadow: 0 5px 0 0 #8a4c00;
+  color: #ffffff;
+  font-weight: 800;
+  transition: all 0.1s ease;
+}
+.skribbl-btn-orange:hover {
+  background-color: #ffa024;
+}
+.skribbl-btn-orange:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 0 #8a4c00;
+}
+
+/* Custom scrollbar for skribbl chat and players */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.08);
+  background: #e4e7eb;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.25);
+  background: #a0aec0;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.4);
+  background: #718096;
 }

@@ -8,10 +8,7 @@ export class Room {
     this.createdAt = Date.now();
 
     // Configuration
-    this.callIntervalSec = Math.max(
-      GAME_CONFIG.MIN_CALL_INTERVAL_SEC,
-      Math.min(options.callIntervalSec || GAME_CONFIG.DEFAULT_CALL_INTERVAL_SEC, GAME_CONFIG.MAX_CALL_INTERVAL_SEC)
-    );
+    this.turnDurationSec = Math.max(15, Math.min(options.turnDurationSec || GAME_CONFIG.DEFAULT_TURN_TIME_SEC, 90));
     this.maxPlayers = Math.min(options.maxPlayers || GAME_CONFIG.DEFAULT_MAX_PLAYERS, 24);
     this.isPublic = Boolean(options.isPublic);
 
@@ -21,15 +18,23 @@ export class Room {
     // Players: sessionToken -> playerObject
     this.players = new Map();
 
-    // Game runtime state
-    this.callerPool = [];
+    // Turn-based game runtime state
+    this.turnOrder = []; // Array of sessionTokens
+    this.currentTurnIndex = 0;
+    this.turnPlayerSessionToken = null;
+    this.turnTimeRemaining = this.turnDurationSec;
+    this.turnTimer = null;
+    this.turnInterval = null;
+
+    // Numbers history
     this.calledNumbers = [];
     this.calledNumbersSet = new Set();
-    this.currentNumber = null;
-    this.timer = null;
+    this.currentCalledNumber = null;
+    this.currentCallerSessionToken = null;
+
     this.winner = null;
     this.chatMessages = [];
-    this.lastChatTimestamp = new Map(); // sessionToken -> timestamp
+    this.lastChatTimestamp = new Map();
 
     // Add initial host player
     this.addPlayer(hostInfo.socketId, hostInfo.sessionToken, hostInfo.name, hostInfo.avatar, true);
@@ -40,22 +45,22 @@ export class Room {
       throw new Error('Room is full');
     }
 
-    if (this.status !== ROOM_STATUS.LOBBY && !this.players.has(sessionToken)) {
-      throw new Error('Game already in progress');
-    }
-
     // Existing player reconnecting
     if (this.players.has(sessionToken)) {
       return this.reconnectPlayer(sessionToken, socketId);
     }
 
-    const card = BingoEngine.generateCard();
+    const isSpectating = this.status !== ROOM_STATUS.LOBBY;
+    const card = isSpectating ? null : BingoEngine.generateCard();
+
     const player = {
       sessionToken,
       socketId,
       name: (name || 'Player').slice(0, 16).trim(),
-      avatar: avatar || '🦊',
+      avatar: avatar || '😃',
+      color: '#55b338',
       isHost,
+      isSpectator: isSpectating,
       isOnline: true,
       card,
       completedLines: [],
@@ -91,11 +96,14 @@ export class Room {
 
     player.isOnline = false;
 
-    // Disconnection grace period
     player.disconnectTimer = setTimeout(() => {
       this.players.delete(sessionToken);
       if (this.hostSessionToken === sessionToken) {
         this.migrateHost();
+      }
+      // If it was this player's turn, advance turn
+      if (this.turnPlayerSessionToken === sessionToken && this.status === ROOM_STATUS.PLAYING) {
+        this.advanceTurn();
       }
       if (onExpiredCallback) {
         onExpiredCallback(sessionToken);
@@ -113,10 +121,14 @@ export class Room {
     if (this.hostSessionToken === sessionToken) {
       this.migrateHost();
     }
+
+    if (this.turnPlayerSessionToken === sessionToken && this.status === ROOM_STATUS.PLAYING) {
+      this.advanceTurn();
+    }
   }
 
   migrateHost() {
-    const onlinePlayers = Array.from(this.players.values()).filter((p) => p.isOnline);
+    const onlinePlayers = Array.from(this.players.values()).filter((p) => p.isOnline && !p.isSpectator);
     if (onlinePlayers.length > 0) {
       const newHost = onlinePlayers[0];
       this.hostSessionToken = newHost.sessionToken;
@@ -126,160 +138,287 @@ export class Room {
     }
   }
 
-  startGame(onNumberCalled, onGameOver) {
+  startGame(onTurnTick, onAutoCall, onGameOver) {
     if (this.status === ROOM_STATUS.PLAYING) return;
 
     // Reset game state
-    this.callerPool = BingoEngine.createCallerPool();
     this.calledNumbers = [];
     this.calledNumbersSet = new Set();
-    this.currentNumber = null;
+    this.currentCalledNumber = null;
+    this.currentCallerSessionToken = null;
     this.winner = null;
     this.status = ROOM_STATUS.PLAYING;
 
-    // Generate fresh cards for all players
+    // Fresh cards for all non-spectator players
+    this.turnOrder = [];
     for (const player of this.players.values()) {
-      player.card = BingoEngine.generateCard();
-      player.completedLines = [];
-      player.completedCount = 0;
-      player.winningCells = [];
-      player.isWinner = false;
+      if (!player.isSpectator) {
+        player.card = BingoEngine.generateCard();
+        player.completedLines = [];
+        player.completedCount = 0;
+        player.winningCells = [];
+        player.isWinner = false;
+        this.turnOrder.push(player.sessionToken);
+      }
     }
 
-    this.scheduleNextCall(onNumberCalled, onGameOver);
+    if (this.turnOrder.length === 0) {
+      throw new Error('Not enough players to start');
+    }
+
+    // Shuffle turn order for fairness
+    for (let i = this.turnOrder.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [this.turnOrder[i], this.turnOrder[j]] = [this.turnOrder[j], this.turnOrder[i]];
+    }
+
+    this.currentTurnIndex = 0;
+    this.turnPlayerSessionToken = this.turnOrder[0];
+    this.startTurnTimer(onTurnTick, onAutoCall, onGameOver);
   }
 
-  scheduleNextCall(onNumberCalled, onGameOver) {
+  startTurnTimer(onTurnTick, onAutoCall, onGameOver) {
+    this.clearTurnTimers();
+    this.turnTimeRemaining = this.turnDurationSec;
+
+    this.turnInterval = setInterval(() => {
+      this.turnTimeRemaining--;
+      if (onTurnTick) onTurnTick(this.turnTimeRemaining);
+
+      if (this.turnTimeRemaining <= 0) {
+        this.clearTurnTimers();
+        // Time expired! Auto-call a number on active player's behalf
+        this.handleTurnTimeout(onAutoCall, onGameOver);
+      }
+    }, 1000);
+  }
+
+  clearTurnTimers() {
+    if (this.turnInterval) {
+      clearInterval(this.turnInterval);
+      this.turnInterval = null;
+    }
+    if (this.turnTimer) {
+      clearTimeout(this.turnTimer);
+      this.turnTimer = null;
+    }
+  }
+
+  handleTurnTimeout(onAutoCall, onGameOver) {
     if (this.status !== ROOM_STATUS.PLAYING) return;
 
-    this.timer = setTimeout(() => {
-      if (this.status !== ROOM_STATUS.PLAYING) return;
+    const activePlayer = this.players.get(this.turnPlayerSessionToken);
+    if (!activePlayer) {
+      this.advanceTurn();
+      return;
+    }
 
-      const callResult = this.callNextNumber();
-      if (callResult.gameOver) {
-        if (onGameOver) onGameOver(callResult);
-      } else {
-        if (onNumberCalled) onNumberCalled(callResult);
-        // Continue calling
-        this.scheduleNextCall(onNumberCalled, onGameOver);
+    // Pick an uncalled number from player's card, or random uncalled number
+    let numberToCall = null;
+    if (activePlayer.card) {
+      const unmarkedCell = activePlayer.card.find((c) => !c.marked && !this.calledNumbersSet.has(c.number));
+      if (unmarkedCell) {
+        numberToCall = unmarkedCell.number;
       }
-    }, this.callIntervalSec * 1000);
+    }
+
+    if (!numberToCall) {
+      // Pick any uncalled 1..75
+      const uncalled = [];
+      for (let i = 1; i <= 75; i++) {
+        if (!this.calledNumbersSet.has(i)) uncalled.push(i);
+      }
+      if (uncalled.length > 0) {
+        numberToCall = uncalled[Math.floor(Math.random() * uncalled.length)];
+      }
+    }
+
+    if (numberToCall) {
+      const result = this.callNumber(this.turnPlayerSessionToken, numberToCall);
+      if (onAutoCall) onAutoCall(result);
+      if (result.isWinner && onGameOver) {
+        onGameOver(result);
+      }
+    }
+  }
+
+  /**
+   * Active player calls a number!
+   */
+  callNumber(sessionToken, number) {
+    if (this.status !== ROOM_STATUS.PLAYING) {
+      throw new Error('Game is not active');
+    }
+
+    if (this.turnPlayerSessionToken !== sessionToken) {
+      throw new Error('It is not your turn to call a number');
+    }
+
+    const check = BingoEngine.canCallNumber(number, this.calledNumbersSet);
+    if (!check.valid) {
+      throw new Error(check.reason);
+    }
+
+    const caller = this.players.get(sessionToken);
+    if (!caller) throw new Error('Player not found');
+
+    // Register call
+    this.calledNumbers.push(number);
+    this.calledNumbersSet.add(number);
+    this.currentCalledNumber = number;
+    this.currentCallerSessionToken = sessionToken;
+
+    // Automatically mark on caller's card because they called it!
+    if (caller.card) {
+      BingoEngine.markNumber(caller.card, number);
+      const evalResult = BingoEngine.evaluateLines(caller.card);
+      caller.completedLines = evalResult.completedLines;
+      caller.completedCount = evalResult.completedCount;
+      caller.winningCells = evalResult.winningCellIndices;
+
+      if (evalResult.isWinner && !caller.isWinner) {
+        caller.isWinner = true;
+        caller.score += 1;
+        this.winner = caller;
+        this.status = ROOM_STATUS.GAME_OVER;
+        this.clearTurnTimers();
+
+        return {
+          success: true,
+          number,
+          callerSessionToken: sessionToken,
+          callerName: caller.name,
+          isWinner: true,
+          winner: {
+            sessionToken: caller.sessionToken,
+            name: caller.name,
+            avatar: caller.avatar,
+            completedCount: caller.completedCount,
+          },
+        };
+      }
+    }
+
+    // Advance turn to next player
+    this.advanceTurn();
+
+    const nextPlayer = this.players.get(this.turnPlayerSessionToken);
+
+    return {
+      success: true,
+      number,
+      callerSessionToken: sessionToken,
+      callerName: caller.name,
+      callerCardMarked: true,
+      nextTurnSessionToken: this.turnPlayerSessionToken,
+      nextTurnName: nextPlayer ? nextPlayer.name : '',
+      isWinner: false,
+    };
+  }
+
+  /**
+   * Opponent marks a called number on their card!
+   */
+  markNumber(sessionToken, number) {
+    if (this.status !== ROOM_STATUS.PLAYING) {
+      throw new Error('Game is not active');
+    }
+
+    if (!this.calledNumbersSet.has(number)) {
+      throw new Error(`Number ${number} has not been called yet!`);
+    }
+
+    const player = this.players.get(sessionToken);
+    if (!player || !player.card) {
+      throw new Error('Player or card not found');
+    }
+
+    const markResult = BingoEngine.markNumber(player.card, number);
+    if (!markResult.marked) {
+      return { success: false, marked: false, reason: 'Number is not on your card' };
+    }
+
+    const evalResult = BingoEngine.evaluateLines(player.card);
+    player.completedLines = evalResult.completedLines;
+    player.completedCount = evalResult.completedCount;
+    player.winningCells = evalResult.winningCellIndices;
+
+    if (evalResult.isWinner && !player.isWinner) {
+      player.isWinner = true;
+      player.score += 1;
+      this.winner = player;
+      this.status = ROOM_STATUS.GAME_OVER;
+      this.clearTurnTimers();
+
+      return {
+        success: true,
+        marked: true,
+        cellIndex: markResult.cellIndex,
+        completedCount: player.completedCount,
+        completedLines: player.completedLines,
+        isWinner: true,
+        winner: {
+          sessionToken: player.sessionToken,
+          name: player.name,
+          avatar: player.avatar,
+          completedCount: player.completedCount,
+        },
+      };
+    }
+
+    return {
+      success: true,
+      marked: true,
+      cellIndex: markResult.cellIndex,
+      completedCount: player.completedCount,
+      completedLines: player.completedLines,
+      isWinner: false,
+    };
+  }
+
+  advanceTurn() {
+    if (this.turnOrder.length === 0) return;
+
+    // Filter active online players
+    const activeOnlineTokens = this.turnOrder.filter((tok) => {
+      const p = this.players.get(tok);
+      return p && p.isOnline && !p.isSpectator;
+    });
+
+    if (activeOnlineTokens.length === 0) return;
+
+    const currentIndex = activeOnlineTokens.indexOf(this.turnPlayerSessionToken);
+    const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % activeOnlineTokens.length;
+    this.currentTurnIndex = nextIndex;
+    this.turnPlayerSessionToken = activeOnlineTokens[nextIndex];
+    this.turnTimeRemaining = this.turnDurationSec;
   }
 
   pauseGame() {
     if (this.status !== ROOM_STATUS.PLAYING) return false;
     this.status = ROOM_STATUS.PAUSED;
-    if (this.timer) {
-      clearTimeout(this.timer);
-      this.timer = null;
-    }
+    this.clearTurnTimers();
     return true;
   }
 
-  resumeGame(onNumberCalled, onGameOver) {
+  resumeGame(onTurnTick, onAutoCall, onGameOver) {
     if (this.status !== ROOM_STATUS.PAUSED) return false;
     this.status = ROOM_STATUS.PLAYING;
-    this.scheduleNextCall(onNumberCalled, onGameOver);
+    this.startTurnTimer(onTurnTick, onAutoCall, onGameOver);
     return true;
-  }
-
-  callNextNumber() {
-    if (this.callerPool.length === 0) {
-      // Numbers pool exhausted
-      this.status = ROOM_STATUS.GAME_OVER;
-      return {
-        gameOver: true,
-        reason: 'pool_exhausted',
-        number: null,
-        winner: null,
-        history: this.calledNumbers,
-      };
-    }
-
-    const number = this.callerPool.pop();
-    this.calledNumbers.push(number);
-    this.calledNumbersSet.add(number);
-    this.currentNumber = number;
-
-    const playerUpdates = [];
-    const winners = [];
-
-    // Automatically mark cards and check for 5-line winners
-    for (const player of this.players.values()) {
-      const markResult = BingoEngine.markNumber(player.card, number);
-      const evalResult = BingoEngine.evaluateLines(player.card);
-
-      player.completedLines = evalResult.completedLines;
-      player.completedCount = evalResult.completedCount;
-      player.winningCells = evalResult.winningCellIndices;
-
-      if (evalResult.isWinner && !player.isWinner) {
-        player.isWinner = true;
-        player.score += 1;
-        winners.push(player);
-      }
-
-      playerUpdates.push({
-        sessionToken: player.sessionToken,
-        name: player.name,
-        avatar: player.avatar,
-        numberMarked: markResult.marked,
-        cellIndex: markResult.cellIndex,
-        completedCount: player.completedCount,
-        completedLines: player.completedLines,
-        isWinner: player.isWinner,
-      });
-    }
-
-    // Check if we have one or more winners
-    if (winners.length > 0) {
-      this.status = ROOM_STATUS.GAME_OVER;
-      if (this.timer) {
-        clearTimeout(this.timer);
-        this.timer = null;
-      }
-      this.winner = winners[0]; // first winner
-      return {
-        gameOver: true,
-        number,
-        history: this.calledNumbers,
-        winner: {
-          sessionToken: this.winner.sessionToken,
-          name: this.winner.name,
-          avatar: this.winner.avatar,
-          completedCount: this.winner.completedCount,
-        },
-        winners: winners.map((w) => ({
-          sessionToken: w.sessionToken,
-          name: w.name,
-          avatar: w.avatar,
-        })),
-        playerUpdates,
-      };
-    }
-
-    return {
-      gameOver: false,
-      number,
-      history: this.calledNumbers,
-      playerUpdates,
-    };
   }
 
   resetForNewGame() {
-    if (this.timer) {
-      clearTimeout(this.timer);
-      this.timer = null;
-    }
+    this.clearTurnTimers();
     this.status = ROOM_STATUS.LOBBY;
-    this.callerPool = [];
     this.calledNumbers = [];
     this.calledNumbersSet = new Set();
-    this.currentNumber = null;
+    this.currentCalledNumber = null;
+    this.currentCallerSessionToken = null;
     this.winner = null;
 
-    // Re-generate fresh cards for next match
     for (const player of this.players.values()) {
+      player.isSpectator = false;
       player.card = BingoEngine.generateCard();
       player.completedLines = [];
       player.completedCount = 0;
@@ -299,7 +438,6 @@ export class Room {
     }
     this.lastChatTimestamp.set(sessionToken, now);
 
-    // Simple sanitization & profanity filter
     const sanitizedText = text
       .trim()
       .slice(0, 150)
@@ -312,6 +450,7 @@ export class Room {
       sessionToken,
       senderName: player.name,
       senderAvatar: player.avatar,
+      senderColor: player.color || '#55b338',
       text: sanitizedText,
       timestamp: now,
       isSystem: false,
@@ -325,12 +464,13 @@ export class Room {
     return chatMsg;
   }
 
-  addSystemMessage(text) {
+  addSystemMessage(text, type = 'info') {
     const chatMsg = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      senderName: 'Bingo Bot',
-      senderAvatar: '🤖',
+      senderName: 'skribbl Bot',
+      senderAvatar: '✏️',
       text,
+      type, // 'info', 'call', 'mark', 'win'
       timestamp: Date.now(),
       isSystem: true,
     };
@@ -338,37 +478,50 @@ export class Room {
     return chatMsg;
   }
 
-  /**
-   * Sanitized payload sent to all clients in the room.
-   * Note: A player receives their own authoritative card; other players see summary.
-   */
   toPublicState(recipientSessionToken) {
-    const playersList = Array.from(this.players.values()).map((p) => ({
+    const playersList = Array.from(this.players.values()).map((p, idx) => ({
       sessionToken: p.sessionToken,
       name: p.name,
       avatar: p.avatar,
+      color: p.color || '#55b338',
       isHost: p.sessionToken === this.hostSessionToken,
+      isSpectator: Boolean(p.isSpectator),
       isOnline: p.isOnline,
+      isTurn: p.sessionToken === this.turnPlayerSessionToken,
       completedCount: p.completedCount,
       completedLines: p.completedLines,
       isWinner: p.isWinner,
       score: p.score,
+      rank: idx + 1,
     }));
 
     const selfPlayer = this.players.get(recipientSessionToken);
+    const turnPlayer = this.players.get(this.turnPlayerSessionToken);
 
     return {
       roomCode: this.code,
       status: this.status,
-      callIntervalSec: this.callIntervalSec,
+      turnDurationSec: this.turnDurationSec,
+      turnTimeRemaining: this.turnTimeRemaining,
       maxPlayers: this.maxPlayers,
       isPublic: this.isPublic,
       hostSessionToken: this.hostSessionToken,
       isHost: recipientSessionToken === this.hostSessionToken,
+      isSpectator: Boolean(selfPlayer?.isSpectator),
       players: playersList,
       playerCount: playersList.length,
-      currentNumber: this.currentNumber,
+
+      // Turn Info
+      turnPlayerSessionToken: this.turnPlayerSessionToken,
+      turnPlayerName: turnPlayer ? turnPlayer.name : '',
+      turnPlayerAvatar: turnPlayer ? turnPlayer.avatar : '',
+      isMyTurn: recipientSessionToken === this.turnPlayerSessionToken,
+
+      // Called numbers
+      currentCalledNumber: this.currentCalledNumber,
+      currentCallerSessionToken: this.currentCallerSessionToken,
       calledNumbers: this.calledNumbers,
+
       winner: this.winner
         ? {
             sessionToken: this.winner.sessionToken,
@@ -377,6 +530,7 @@ export class Room {
             completedCount: this.winner.completedCount,
           }
         : null,
+
       myCard: selfPlayer ? selfPlayer.card : null,
       myCompletedCount: selfPlayer ? selfPlayer.completedCount : 0,
       myCompletedLines: selfPlayer ? selfPlayer.completedLines : [],
@@ -391,15 +545,12 @@ export class Room {
       status: this.status,
       playerCount: this.players.size,
       maxPlayers: this.maxPlayers,
-      callIntervalSec: this.callIntervalSec,
+      turnDurationSec: this.turnDurationSec,
     };
   }
 
   destroy() {
-    if (this.timer) {
-      clearTimeout(this.timer);
-      this.timer = null;
-    }
+    this.clearTurnTimers();
     for (const player of this.players.values()) {
       if (player.disconnectTimer) {
         clearTimeout(player.disconnectTimer);

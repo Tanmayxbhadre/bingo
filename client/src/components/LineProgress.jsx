@@ -46,3 +46,4 @@ export function LineProgress({ completedCount = 0, completedLines = [] }) {
     </div>
   );
 }
+

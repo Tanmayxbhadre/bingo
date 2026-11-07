@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Dices, Users, PlusCircle, ArrowRight, Globe, HelpCircle, ShieldCheck, Zap, Sparkles } from 'lucide-react';
+import { Play, PlusCircle, ArrowRight, Globe, HelpCircle, Sparkles, Volume2, VolumeX } from 'lucide-react';
 import { useGame } from '../context/GameContext.jsx';
-import { AvatarPicker } from '../components/AvatarPicker.jsx';
+import { SkribblLogo } from '../components/SkribblLogo.jsx';
+import { SkribblAvatarCustomizer } from '../components/SkribblAvatarCustomizer.jsx';
+import { AVATARS, SKRIBBL_COLORS } from '@shared/constants/gameConstants.js';
 import { sounds } from '../services/soundEffects.js';
 
 export function HomePage() {
   const {
     name,
-    avatar,
+    avatarIndex,
+    avatarColor,
     updateProfile,
     createRoom,
     joinRoom,
@@ -16,19 +19,20 @@ export function HomePage() {
     fetchPublicRooms,
     error,
     clearError,
+    isMuted,
+    toggleSound,
   } = useGame();
 
   const [inputName, setInputName] = useState(name);
-  const [selectedAvatar, setSelectedAvatar] = useState(avatar);
+  const [currentAvatarIdx, setCurrentAvatarIdx] = useState(avatarIndex);
+  const [currentColor, setCurrentColor] = useState(avatarColor);
   const [joinCode, setJoinCode] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showPublicModal, setShowPublicModal] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
-  // Room creation settings
-  const [callInterval, setCallInterval] = useState(4);
-  const [maxPlayers, setMaxPlayers] = useState(12);
+  const [turnDuration, setTurnDuration] = useState(45);
+  const [maxPlayers, setMaxPlayers] = useState(8);
   const [isPublic, setIsPublic] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -36,22 +40,69 @@ export function HomePage() {
     fetchPublicRooms();
   }, []);
 
-  const handleRandomizeName = () => {
+  const handleRandomize = () => {
     sounds.playPop();
-    const adjectives = ['Lucky', 'Speedy', 'Sunny', 'Mega', 'Hyper', 'Super', 'Cozy', 'Brave', 'Golden'];
-    const nouns = ['Player', 'Panda', 'Tiger', 'Eagle', 'Whiz', 'Star', 'Champion', 'Hero', 'Spark'];
+    const adjectives = ['Happy', 'Speedy', 'Cool', 'Lucky', 'Super', 'Cozy', 'Brave', 'Golden'];
+    const nouns = ['Player', 'Panda', 'Tiger', 'Artist', 'Star', 'Hero', 'Gamer', 'Doodler'];
     const randomName = `${adjectives[Math.floor(Math.random() * adjectives.length)]}${nouns[Math.floor(Math.random() * nouns.length)]}`;
+    const randomAvatarIdx = Math.floor(Math.random() * AVATARS.length);
+    const randomColor = SKRIBBL_COLORS[Math.floor(Math.random() * SKRIBBL_COLORS.length)];
+
     setInputName(randomName);
-    updateProfile(randomName, selectedAvatar);
+    setCurrentAvatarIdx(randomAvatarIdx);
+    setCurrentColor(randomColor);
+    updateProfile(randomName, randomAvatarIdx, randomColor);
   };
 
-  const handleAvatarChange = (newAvatar) => {
-    setSelectedAvatar(newAvatar);
-    updateProfile(inputName, newAvatar);
+  const handleNameChange = (e) => {
+    setInputName(e.target.value);
   };
 
   const handleNameBlur = () => {
-    updateProfile(inputName.trim() || 'Player', selectedAvatar);
+    updateProfile(inputName.trim() || 'Player', currentAvatarIdx, currentColor);
+  };
+
+  const handleAvatarChange = (idx) => {
+    setCurrentAvatarIdx(idx);
+    updateProfile(inputName, idx, currentColor);
+  };
+
+  const handleColorChange = (col) => {
+    setCurrentColor(col);
+    updateProfile(inputName, currentAvatarIdx, col);
+  };
+
+  // Quick Play button (like skribbl.io green Play button)
+  // Either joins first available public room or creates one!
+  const handleQuickPlay = async () => {
+    try {
+      setIsLoading(true);
+      sounds.playPop();
+      updateProfile(inputName.trim() || 'Player', currentAvatarIdx, currentColor);
+
+      if (publicRooms.length > 0) {
+        const targetRoom = publicRooms[0];
+        const res = await joinRoom(targetRoom.code);
+        if (res?.success) {
+          navigate(`/room/${res.roomCode}`);
+          return;
+        }
+      }
+
+      // If no public rooms available, create one
+      const res = await createRoom({
+        turnDurationSec: 45,
+        maxPlayers: 8,
+        isPublic: true,
+      });
+
+      if (res?.success) {
+        navigate(`/room/${res.roomCode}`);
+      }
+    } catch (err) {
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCreateSubmit = async (e) => {
@@ -59,10 +110,10 @@ export function HomePage() {
     try {
       setIsLoading(true);
       sounds.playPop();
-      updateProfile(inputName.trim() || 'Host', selectedAvatar);
+      updateProfile(inputName.trim() || 'Host', currentAvatarIdx, currentColor);
 
       const res = await createRoom({
-        callIntervalSec: Number(callInterval),
+        turnDurationSec: Number(turnDuration),
         maxPlayers: Number(maxPlayers),
         isPublic,
       });
@@ -72,7 +123,6 @@ export function HomePage() {
         navigate(`/room/${res.roomCode}`);
       }
     } catch (err) {
-      // error handled by context
     } finally {
       setIsLoading(false);
     }
@@ -85,120 +135,102 @@ export function HomePage() {
     try {
       setIsLoading(true);
       sounds.playPop();
-      updateProfile(inputName.trim() || 'Player', selectedAvatar);
+      updateProfile(inputName.trim() || 'Player', currentAvatarIdx, currentColor);
 
       const res = await joinRoom(code);
       if (res?.success) {
         navigate(`/room/${res.roomCode}`);
       }
     } catch (err) {
-      // error handled by context
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between p-4 sm:p-6 lg:p-8">
-      <div className="max-w-4xl mx-auto w-full">
-        {/* Header / Hero */}
-        <div className="text-center my-6 sm:my-8">
-          <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-pink-500 via-yellow-400 to-amber-500 p-1 rounded-3xl shadow-2xl mb-4 transform hover:scale-105 transition-transform">
-            <div className="bg-slate-900 px-6 py-2 rounded-[22px] flex items-center space-x-2">
-              <span className="text-3xl">🎯</span>
-              <span className="text-3xl sm:text-4xl font-black text-white tracking-tight">
-                Bingo<span className="text-amber-300">.io</span>
-              </span>
-            </div>
+    <div className="min-h-screen flex flex-col justify-between p-3 sm:p-6 text-slate-800">
+      <div className="max-w-md mx-auto w-full my-auto">
+        {/* skribbl.io Logo */}
+        <div className="text-center mb-4">
+          <SkribblLogo size="large" />
+          <div className="text-white/80 font-bold text-xs mt-1">
+            Free Multiplayer Bingo Game with Friends!
           </div>
-
-          <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight drop-shadow-md">
-            Let's Play Bingo!
-          </h1>
-          <p className="text-slate-300 text-sm sm:text-base font-semibold mt-2 max-w-lg mx-auto">
-            Play real-time 5×5 multiplayer Bingo with friends. Create a private room or jump into public games!
-          </p>
         </div>
 
-        {/* Global Error Notice */}
+        {/* Global Error Banner */}
         {error && (
-          <div className="max-w-md mx-auto mb-6 bg-rose-500 text-white p-3 rounded-2xl flex items-center justify-between font-bold text-xs shadow-lg animate-pop">
-            <span>⚠️ {error}</span>
-            <button onClick={clearError} className="underline text-xs">
+          <div className="mb-3 bg-[#e74c3c] text-white p-2.5 rounded-2xl border-2 border-[#962d22] font-black text-xs text-center shadow-md animate-pop">
+            <span>{error}</span>
+            <button onClick={clearError} className="underline ml-2">
               Dismiss
             </button>
           </div>
         )}
 
-        {/* Central Gaming Hub Card */}
-        <div className="max-w-xl mx-auto bg-white/10 backdrop-blur-xl border-2 border-white/20 rounded-3xl p-5 sm:p-7 shadow-2xl space-y-6">
-          {/* 1. Player Profile Setup */}
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-bold text-slate-200 mb-1.5">
-                Your Display Name
-              </label>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="text"
-                  value={inputName}
-                  onChange={(e) => setInputName(e.target.value)}
-                  onBlur={handleNameBlur}
-                  maxLength={16}
-                  placeholder="Enter your name..."
-                  className="flex-1 bg-white/20 border-2 border-white/20 focus:border-yellow-400 text-white placeholder-slate-400 rounded-2xl px-4 py-3 font-bold text-base focus:outline-none transition-colors"
-                />
-                <button
-                  type="button"
-                  onClick={handleRandomizeName}
-                  title="Randomize Name"
-                  className="bg-yellow-400 hover:bg-yellow-300 text-yellow-950 p-3 rounded-2xl shadow-bouncy active:scale-95 transition-all"
-                >
-                  <Dices className="w-6 h-6" />
-                </button>
-              </div>
-            </div>
+        {/* Central skribbl.io Box */}
+        <div className="bg-white rounded-3xl border-4 border-[#0b2c4d] shadow-[0_8px_0_#08233d] p-5 sm:p-6 space-y-4">
+          {/* Avatar Customizer */}
+          <SkribblAvatarCustomizer
+            avatarIndex={currentAvatarIdx}
+            avatarColor={currentColor}
+            onChangeAvatar={handleAvatarChange}
+            onChangeColor={handleColorChange}
+            onRandomize={handleRandomize}
+          />
 
-            {/* Avatar Selector */}
-            <AvatarPicker
-              selectedAvatar={selectedAvatar}
-              onSelect={handleAvatarChange}
+          {/* Name Input */}
+          <div>
+            <input
+              type="text"
+              value={inputName}
+              onChange={handleNameChange}
+              onBlur={handleNameBlur}
+              maxLength={16}
+              placeholder="Enter your name"
+              className="w-full bg-[#f4f7fa] border-3 border-[#0b2c4d] text-[#0b2c4d] placeholder-slate-400 font-extrabold text-center text-lg rounded-2xl py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0084ff]"
             />
           </div>
 
-          <div className="h-px bg-white/10 w-full" />
+          {/* Giant skribbl Green Play Button */}
+          <button
+            onClick={handleQuickPlay}
+            disabled={isLoading}
+            className="w-full skribbl-btn-green py-3.5 rounded-2xl text-xl flex items-center justify-center space-x-2 tracking-wide"
+          >
+            <Play className="w-6 h-6 fill-white" />
+            <span>{isLoading ? 'Entering...' : 'Play!'}</span>
+          </button>
 
-          {/* 2. Action Buttons */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {/* Create Room Button */}
+          {/* Action Row: Create Private Room & Public Games */}
+          <div className="grid grid-cols-2 gap-2.5 pt-1">
             <button
               onClick={() => {
                 sounds.playPop();
                 setShowCreateModal(true);
               }}
-              className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-400 hover:to-rose-400 text-white font-black py-4 px-5 rounded-2xl shadow-bouncy active:translate-y-1 transition-all flex items-center justify-center space-x-2 text-base"
+              className="skribbl-btn-blue py-2.5 rounded-2xl text-xs sm:text-sm flex items-center justify-center space-x-1"
             >
-              <PlusCircle className="w-5 h-5" />
+              <PlusCircle className="w-4 h-4" />
               <span>Create Room</span>
             </button>
 
-            {/* Public Rooms Button */}
             <button
               onClick={() => {
                 sounds.playPop();
                 fetchPublicRooms();
                 setShowPublicModal(true);
               }}
-              className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 text-white font-black py-4 px-5 rounded-2xl shadow-bouncy active:translate-y-1 transition-all flex items-center justify-center space-x-2 text-base"
+              className="skribbl-btn-orange py-2.5 rounded-2xl text-xs sm:text-sm flex items-center justify-center space-x-1"
             >
-              <Globe className="w-5 h-5" />
-              <span>Public Games ({publicRooms.length})</span>
+              <Globe className="w-4 h-4" />
+              <span>Rooms ({publicRooms.length})</span>
             </button>
           </div>
 
-          {/* 3. Join by Room Code Box */}
-          <div className="bg-black/20 p-4 rounded-2xl border border-white/10">
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+          {/* Join by Room Code Box */}
+          <div className="pt-2 border-t-2 border-slate-200">
+            <label className="block text-[11px] font-black uppercase text-slate-500 mb-1 text-center">
               Have a Room Code?
             </label>
             <div className="flex items-center space-x-2">
@@ -206,14 +238,14 @@ export function HomePage() {
                 type="text"
                 value={joinCode}
                 onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                placeholder="ENTER 6-DIGIT CODE"
+                placeholder="ENTER CODE"
                 maxLength={6}
-                className="flex-1 bg-white/15 border border-white/20 focus:border-yellow-400 text-yellow-300 placeholder-slate-400 font-mono font-black text-center tracking-widest text-lg rounded-2xl py-2.5 uppercase focus:outline-none"
+                className="flex-1 bg-[#f4f7fa] border-2 border-[#0b2c4d] text-center font-mono font-black text-[#0b2c4d] placeholder-slate-400 rounded-xl py-2 uppercase text-base focus:outline-none"
               />
               <button
                 onClick={() => handleJoinSubmit()}
                 disabled={joinCode.trim().length < 4 || isLoading}
-                className="bg-emerald-400 hover:bg-emerald-300 disabled:opacity-50 text-emerald-950 font-black px-5 py-3 rounded-2xl shadow-bouncy active:translate-y-0.5 transition-all flex items-center space-x-1"
+                className="skribbl-btn-green px-4 py-2 rounded-xl text-sm flex items-center space-x-1 disabled:opacity-50"
               >
                 <span>Join</span>
                 <ArrowRight className="w-4 h-4" />
@@ -222,127 +254,98 @@ export function HomePage() {
           </div>
         </div>
 
-        {/* 4. How To Play Section */}
-        <div className="max-w-2xl mx-auto mt-10 bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6 text-white shadow-lg space-y-4">
-          <div className="flex items-center space-x-2">
-            <HelpCircle className="w-5 h-5 text-yellow-400" />
-            <h2 className="text-lg font-black tracking-wide">How To Play Bingo.io</h2>
+        {/* How To Play Box */}
+        <div className="mt-4 bg-white/10 border-2 border-white/20 rounded-2xl p-3 text-white text-xs space-y-1 text-center">
+          <div className="font-black text-yellow-300 flex items-center justify-center space-x-1">
+            <HelpCircle className="w-3.5 h-3.5" />
+            <span>HOW TO PLAY</span>
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-            <div className="bg-white/10 p-3.5 rounded-2xl space-y-1.5 border border-white/5">
-              <div className="w-7 h-7 rounded-xl bg-pink-500 flex items-center justify-center font-black text-sm">
-                1
-              </div>
-              <h3 className="font-bold text-yellow-300 text-sm">5×5 Unique Card</h3>
-              <p className="text-slate-300 leading-relaxed">
-                You receive 25 random unique numbers from 1 to 75. Every player's card is independently generated.
-              </p>
-            </div>
-
-            <div className="bg-white/10 p-3.5 rounded-2xl space-y-1.5 border border-white/5">
-              <div className="w-7 h-7 rounded-xl bg-amber-400 text-amber-950 flex items-center justify-center font-black text-sm">
-                2
-              </div>
-              <h3 className="font-bold text-yellow-300 text-sm">Automatic Marking</h3>
-              <p className="text-slate-300 leading-relaxed">
-                The server automatically calls random numbers. Matching numbers on your card are marked immediately without manual effort!
-              </p>
-            </div>
-
-            <div className="bg-white/10 p-3.5 rounded-2xl space-y-1.5 border border-white/5">
-              <div className="w-7 h-7 rounded-xl bg-emerald-400 text-emerald-950 flex items-center justify-center font-black text-sm">
-                3
-              </div>
-              <h3 className="font-bold text-yellow-300 text-sm">5 Lines to Win!</h3>
-              <p className="text-slate-300 leading-relaxed">
-                Complete ANY 5 lines (rows, columns, or diagonals). The first player to reach 5 completed lines wins BINGO!
-              </p>
-            </div>
-          </div>
+          <p className="text-slate-200">
+            1. Players take turns calling numbers from their 5×5 card!
+          </p>
+          <p className="text-slate-200">
+            2. When opponent calls a number, click it on your card to mark it!
+          </p>
+          <p className="text-slate-200">
+            3. Complete any 5 lines to get <span className="font-bold text-yellow-300">B-I-N-G-O</span>!
+          </p>
         </div>
       </div>
 
       {/* Footer */}
-      <footer className="text-center text-xs text-slate-400 mt-12 mb-4 space-y-1">
-        <p>🎯 Bingo.io — Real-time Multiplayer Web Game</p>
-        <p className="opacity-60">Server-authoritative game state with Socket.IO</p>
+      <footer className="text-center text-xs text-white/60 mt-4">
+        Bingo.io — skribbl.io style multiplayer Bingo
       </footer>
 
       {/* CREATE ROOM MODAL */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-pop">
-          <div className="bg-slate-900 border-2 border-white/20 p-6 rounded-3xl max-w-md w-full text-white shadow-2xl space-y-4">
-            <h2 className="text-2xl font-black text-yellow-300">Create Private Room</h2>
+          <div className="bg-white border-4 border-[#0b2c4d] rounded-3xl p-6 max-w-sm w-full text-[#0b2c4d] shadow-[0_8px_0_#08233d] space-y-4">
+            <h2 className="text-2xl font-black text-center text-[#0b2c4d]">
+              Create Private Room
+            </h2>
 
             <form onSubmit={handleCreateSubmit} className="space-y-4">
-              {/* Calling Speed */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
-                  Number Calling Interval: <span className="text-yellow-300">{callInterval} seconds</span>
+                <label className="block text-xs font-black uppercase text-slate-500 mb-1">
+                  Turn Timer: <span className="text-[#0084ff]">{turnDuration} seconds</span>
                 </label>
-                <div className="grid grid-cols-4 gap-2">
-                  {[2, 4, 6, 8].map((sec) => (
+                <div className="grid grid-cols-3 gap-2">
+                  {[30, 45, 60].map((sec) => (
                     <button
                       key={sec}
                       type="button"
-                      onClick={() => setCallInterval(sec)}
-                      className={`py-2 rounded-xl text-xs font-black transition-all ${
-                        callInterval === sec
-                          ? 'bg-yellow-400 text-yellow-950 shadow-bouncy'
-                          : 'bg-white/10 hover:bg-white/20 text-white'
+                      onClick={() => setTurnDuration(sec)}
+                      className={`py-2 rounded-xl text-xs font-black border-2 transition-all ${
+                        turnDuration === sec
+                          ? 'bg-[#0084ff] text-white border-[#005bb5] shadow-[0_3px_0_#00458a]'
+                          : 'bg-slate-100 text-slate-700 border-slate-300'
                       }`}
                     >
-                      {sec}s {sec === 2 ? '⚡' : sec === 4 ? '👍' : ''}
+                      {sec}s
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Max Players */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
-                  Max Players: <span className="text-yellow-300">{maxPlayers}</span>
+                <label className="block text-xs font-black uppercase text-slate-500 mb-1">
+                  Max Players: <span className="text-[#0084ff]">{maxPlayers}</span>
                 </label>
                 <input
                   type="range"
                   min="2"
-                  max="24"
+                  max="16"
                   value={maxPlayers}
                   onChange={(e) => setMaxPlayers(e.target.value)}
-                  className="w-full accent-yellow-400 cursor-pointer"
+                  className="w-full accent-[#0084ff] cursor-pointer"
                 />
               </div>
 
-              {/* Public Toggle */}
-              <div className="flex items-center justify-between bg-white/10 p-3 rounded-2xl">
-                <div>
-                  <span className="font-bold text-sm block">List in Public Games</span>
-                  <span className="text-[11px] text-slate-300">Allow other players to join from the homepage</span>
-                </div>
+              <div className="flex items-center justify-between bg-slate-100 p-2.5 rounded-xl border border-slate-300">
+                <span className="font-bold text-xs">Public Room</span>
                 <input
                   type="checkbox"
                   checked={isPublic}
                   onChange={(e) => setIsPublic(e.target.checked)}
-                  className="w-5 h-5 accent-yellow-400 rounded cursor-pointer"
+                  className="w-5 h-5 accent-[#55b338] rounded cursor-pointer"
                 />
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex items-center space-x-3 pt-2">
+              <div className="flex items-center space-x-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="flex-1 bg-white/15 hover:bg-white/25 text-white font-bold py-3 rounded-2xl text-sm"
+                  className="flex-1 bg-slate-200 hover:bg-slate-300 font-bold py-2.5 rounded-xl text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex-1 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-black py-3 rounded-2xl shadow-bouncy active:translate-y-0.5 text-sm"
+                  className="flex-1 skribbl-btn-green py-2.5 rounded-xl text-sm"
                 >
-                  {isLoading ? 'Creating...' : 'Create & Enter'}
+                  Create
                 </button>
               </div>
             </form>
@@ -350,52 +353,43 @@ export function HomePage() {
         </div>
       )}
 
-      {/* PUBLIC ROOMS BROWSER MODAL */}
+      {/* PUBLIC ROOMS MODAL */}
       {showPublicModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-pop">
-          <div className="bg-slate-900 border-2 border-white/20 p-6 rounded-3xl max-w-lg w-full text-white shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <div className="flex items-center space-x-2">
-                <Globe className="w-5 h-5 text-blue-400" />
-                <h2 className="text-xl font-black text-white">Public Rooms</h2>
-              </div>
+          <div className="bg-white border-4 border-[#0b2c4d] rounded-3xl p-5 max-w-sm w-full text-[#0b2c4d] shadow-[0_8px_0_#08233d] space-y-3">
+            <div className="flex items-center justify-between border-b-2 border-slate-200 pb-2">
+              <span className="font-black text-lg">Public Rooms</span>
               <button
                 onClick={fetchPublicRooms}
-                className="text-xs bg-white/15 hover:bg-white/25 px-2.5 py-1 rounded-xl text-slate-200"
+                className="text-xs bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-xl font-bold"
               >
                 Refresh
               </button>
             </div>
 
-            <div className="max-h-64 overflow-y-auto space-y-2 pr-1">
+            <div className="max-h-56 overflow-y-auto space-y-2 pr-1">
               {publicRooms.length === 0 ? (
-                <div className="text-center py-8 text-slate-400 text-sm">
-                  No public rooms waiting right now. Create one and invite players!
+                <div className="text-center py-8 text-slate-400 text-xs italic">
+                  No public rooms waiting. Create one now!
                 </div>
               ) : (
                 publicRooms.map((room) => (
                   <div
                     key={room.code}
-                    className="flex items-center justify-between bg-white/10 p-3 rounded-2xl border border-white/10 hover:bg-white/15 transition-colors"
+                    className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border-2 border-slate-200"
                   >
                     <div>
-                      <div className="flex items-center space-x-2">
-                        <span className="font-mono font-black text-yellow-300 text-base">{room.code}</span>
-                        <span className="bg-emerald-400/20 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-md">
-                          Waiting in Lobby
-                        </span>
-                      </div>
-                      <div className="text-xs text-slate-300 mt-0.5">
-                        {room.playerCount} / {room.maxPlayers} Players • {room.callIntervalSec}s Speed
+                      <div className="font-mono font-black text-[#0084ff] text-base">{room.code}</div>
+                      <div className="text-[10px] text-slate-500 font-bold">
+                        {room.playerCount} / {room.maxPlayers} Players
                       </div>
                     </div>
-
                     <button
                       onClick={() => {
                         setShowPublicModal(false);
                         handleJoinSubmit(room.code);
                       }}
-                      className="bg-emerald-400 hover:bg-emerald-300 text-emerald-950 font-black px-4 py-2 rounded-xl text-xs shadow-bouncy active:scale-95"
+                      className="skribbl-btn-green px-3 py-1.5 rounded-xl text-xs"
                     >
                       Join
                     </button>
@@ -406,7 +400,7 @@ export function HomePage() {
 
             <button
               onClick={() => setShowPublicModal(false)}
-              className="w-full bg-white/15 hover:bg-white/25 text-white font-bold py-2.5 rounded-2xl text-xs"
+              className="w-full bg-slate-200 font-bold py-2 rounded-xl text-xs"
             >
               Close
             </button>
