@@ -26,10 +26,12 @@ export function RoomPage() {
   const [isStarting, setIsStarting] = useState(false);
 
   useEffect(() => {
-    if (!roomState && roomCode && connected) {
-      joinRoom(roomCode).catch(() => {});
+    if (roomCode && connected) {
+      if (!roomState || roomState.roomCode !== roomCode) {
+        joinRoom(roomCode).catch(() => {});
+      }
     }
-  }, [roomCode, roomState, connected]);
+  }, [roomCode, roomState?.roomCode, connected]);
 
   useEffect(() => {
     if (!roomState && !roomCode) {

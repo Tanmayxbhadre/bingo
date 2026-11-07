@@ -4,7 +4,7 @@ import { SOCKET_EVENTS, ROOM_STATUS } from '../../../shared/constants/gameConsta
 export function setupSocketHandlers(io) {
   function broadcastRoomState(room) {
     for (const player of room.players.values()) {
-      if (player.isOnline && player.socketId) {
+      if (player.socketId) {
         const personalState = room.toPublicState(player.sessionToken);
         io.to(player.socketId).emit(SOCKET_EVENTS.ROOM_UPDATED, personalState);
       }
@@ -143,6 +143,7 @@ export function setupSocketHandlers(io) {
         );
 
         callback?.({ success: true });
+        io.to(room.code).emit(SOCKET_EVENTS.START_GAME, { roomCode: room.code });
         broadcastRoomState(room);
       } catch (err) {
         console.error('game_start error:', err);
@@ -299,6 +300,7 @@ export function setupSocketHandlers(io) {
         room.resetForNewGame();
         room.addSystemMessage('New round ready! Host can start when everyone is ready.');
         callback?.({ success: true });
+        io.to(room.code).emit(SOCKET_EVENTS.START_GAME, { roomCode: room.code });
         broadcastRoomState(room);
       } catch (err) {
         callback?.({ success: false, error: err.message });

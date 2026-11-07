@@ -31,14 +31,38 @@ export function GameProvider({ children }) {
   const [lastMarkedNumber, setLastMarkedNumber] = useState(null);
 
   const socketRef = useRef(null);
-
-  const currentAvatar = AVATARS[avatarIndex] || AVATARS[0];
+  const currentRoomCodeRef = useRef(null);
+  const nameRef = useRef(name);
+  const avatarRef = useRef(currentAvatar);
+  const colorRef = useRef(avatarColor);
 
   useEffect(() => {
-    const serverUrl = import.meta.env.VITE_SERVER_URL || window.location.origin;
+    nameRef.current = name;
+  }, [name]);
+  useEffect(() => {
+    avatarRef.current = currentAvatar;
+  }, [currentAvatar]);
+  useEffect(() => {
+    colorRef.current = avatarColor;
+  }, [avatarColor]);
+
+  useEffect(() => {
+    if (roomState?.roomCode) {
+      currentRoomCodeRef.current = roomState.roomCode;
+    }
+  }, [roomState?.roomCode]);
+
+  useEffect(() => {
+    // In local dev on Vite port 5173, connect directly to backend on 4000
+    const serverUrl =
+      import.meta.env.VITE_SERVER_URL ||
+      (typeof window !== 'undefined' && window.location.port === '5173'
+        ? 'http://localhost:4000'
+        : window.location.origin);
+
     const socket = io(serverUrl, {
       transports: ['websocket', 'polling'],
-      reconnectionAttempts: 10,
+      reconnectionAttempts: 20,
       reconnectionDelay: 1000,
     });
 
@@ -47,10 +71,52 @@ export function GameProvider({ children }) {
     socket.on('connect', () => {
       setConnected(true);
       setError(null);
+
+      // Rebind to active room if socket reconnected
+      const code = currentRoomCodeRef.current;
+      if (code && sessionToken) {
+        socket.emit(
+          SOCKET_EVENTS.JOIN_ROOM,
+          {
+            roomCode: code,
+            sessionToken,
+            name: nameRef.current || 'Player',
+            avatar: avatarRef.current?.emoji || '😃',
+            color: colorRef.current || '#55b338',
+          },
+          (res) => {
+            if (res?.success && res.state) {
+              setRoomState(res.state);
+            }
+          }
+        );
+      }
     });
 
     socket.on('disconnect', () => {
       setConnected(false);
+    });
+
+    // When host starts game, broadcast ensures all room members re-sync immediately
+    socket.on(SOCKET_EVENTS.START_GAME, () => {
+      const code = currentRoomCodeRef.current;
+      if (code && sessionToken) {
+        socket.emit(
+          SOCKET_EVENTS.JOIN_ROOM,
+          {
+            roomCode: code,
+            sessionToken,
+            name: nameRef.current || 'Player',
+            avatar: avatarRef.current?.emoji || '😃',
+            color: colorRef.current || '#55b338',
+          },
+          (res) => {
+            if (res?.success && res.state) {
+              setRoomState(res.state);
+            }
+          }
+        );
+      }
     });
 
     socket.on(SOCKET_EVENTS.ROOM_UPDATED, (updatedState) => {
@@ -145,6 +211,7 @@ export function GameProvider({ children }) {
         },
         (res) => {
           if (res?.success) {
+            currentRoomCodeRef.current = res.roomCode;
             setRoomState(res.state);
             resolve(res);
           } else {
@@ -172,6 +239,7 @@ export function GameProvider({ children }) {
         },
         (res) => {
           if (res?.success) {
+            currentRoomCodeRef.current = res.roomCode;
             setRoomState(res.state);
             resolve(res);
           } else {
@@ -184,6 +252,7 @@ export function GameProvider({ children }) {
   };
 
   const leaveRoom = () => {
+    currentRoomCodeRef.current = null;
     if (socketRef.current) {
       socketRef.current.emit(SOCKET_EVENTS.LEAVE_ROOM);
     }

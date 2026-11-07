@@ -43,8 +43,8 @@ const io = new Server(server, {
     origin: '*',
     methods: ['GET', 'POST'],
   },
-  pingInterval: 10000,
-  pingTimeout: 5000,
+  pingInterval: 25000,
+  pingTimeout: 30000, // 30s so background browser tabs never get dropped
 });
 
 setupSocketHandlers(io);
