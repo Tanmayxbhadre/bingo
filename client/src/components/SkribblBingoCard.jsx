@@ -136,20 +136,20 @@ export function SkribblBingoCard({
             const canCallThis = isMyTurn && !isMarked && !calledSet.has(cell.number);
             const isClickable = !isMarked && (isCalledToMark || canCallThis);
 
-            let cellClass = 'bg-[#f4f7fa] text-[#0b2c4d] border-3 border-[#0b2c4d] shadow-[0_3px_0_#0b2c4d]';
+            let cellClass = 'bg-white text-[#0b2c4d] border-3 border-[#0b2c4d] shadow-[0_3px_0_#08233d]';
 
             if (isWinningCell) {
               // Glowing golden completed line cell
               cellClass = 'bg-yellow-300 text-yellow-950 font-black border-3 border-yellow-600 shadow-[0_3px_0_#b38000] ring-2 ring-yellow-400';
             } else if (isMarked) {
               // Marked with skribbl crayon stamp
-              cellClass = 'bg-slate-100 text-slate-400 border-2 border-slate-300 shadow-[0_2px_0_#cbd5e1]';
+              cellClass = 'bg-slate-100 text-slate-300 border-2 border-slate-300 shadow-[0_2px_0_#cbd5e1]';
             } else if (isCalledToMark) {
-              // Number was called! Vibrant pulsing yellow & pink ring alert to click and mark!
-              cellClass = 'bg-yellow-300 hover:bg-yellow-400 text-yellow-950 font-black border-4 border-pink-500 shadow-[0_4px_0_#b38000] ring-4 ring-pink-400 animate-pulse cursor-pointer scale-102';
+              // Number was called! Vibrant alert to click and mark
+              cellClass = 'bg-amber-100 hover:bg-amber-200 text-[#0b2c4d] font-black border-4 border-rose-500 shadow-[0_4px_0_#be123c] ring-4 ring-rose-400/60 animate-pulse cursor-pointer';
             } else if (canCallThis) {
               // It's your turn to call
-              cellClass = 'bg-emerald-50 hover:bg-emerald-100 text-emerald-950 font-black border-3 border-[#387c23] shadow-[0_3px_0_#285a19] cursor-pointer hover:scale-105';
+              cellClass = 'bg-white hover:bg-emerald-50 text-[#0b2c4d] font-black border-3 border-[#0b2c4d] hover:border-emerald-600 shadow-[0_4px_0_#08233d] hover:shadow-[0_4px_0_#1b4d1b] cursor-pointer hover:-translate-y-0.5';
             }
 
             return (
@@ -160,8 +160,8 @@ export function SkribblBingoCard({
                 disabled={!isClickable}
                 className={`relative aspect-square rounded-2xl flex flex-col items-center justify-center select-none transition-all duration-150 active:translate-y-0.5 ${cellClass}`}
               >
-                {/* Number (Big & bold!) */}
-                <span className={`text-2xl sm:text-3xl md:text-4xl font-black ${isMarked ? 'opacity-25 line-through' : ''}`}>
+                {/* Number (Big, bold, playful!) */}
+                <span className={`text-2xl sm:text-3xl md:text-4xl font-black ${isMarked ? 'opacity-30' : ''}`}>
                   {cell.number}
                 </span>
 
@@ -174,17 +174,10 @@ export function SkribblBingoCard({
                   </div>
                 )}
 
-                {/* Flashing "CLICK!" badge when opponent calls this number */}
+                {/* Pulsing "TAP!" badge when called */}
                 {isCalledToMark && (
-                  <span className="absolute -top-2.5 -right-1 bg-pink-500 text-white font-black text-[10px] px-2 py-0.5 rounded-full uppercase tracking-tighter shadow-md animate-pulse">
-                    Click!
-                  </span>
-                )}
-
-                {/* Subtle "Call" text on your turn */}
-                {canCallThis && (
-                  <span className="hidden sm:inline-block absolute bottom-1 text-[9px] font-black text-emerald-700 uppercase tracking-tighter">
-                    Call
+                  <span className="absolute -top-2 -right-1 bg-rose-500 text-white font-black text-[10px] px-2 py-0.5 rounded-full uppercase tracking-tight shadow-md animate-bounce">
+                    Tap!
                   </span>
                 )}
               </button>
@@ -193,7 +186,7 @@ export function SkribblBingoCard({
         </div>
       </div>
 
-      {/* Opponent Calling Helper Alert Banner - Clickable as well! */}
+      {/* Opponent Calling Helper Alert Banner */}
       {!isMyTurn && currentCalledNumber && hasCurrentCalledToMark && (
         <button
           type="button"
@@ -201,27 +194,28 @@ export function SkribblBingoCard({
             sounds.playMark();
             markNumber(currentCalledNumber);
           }}
-          className="mt-2.5 inline-flex items-center space-x-1.5 bg-pink-500 hover:bg-pink-600 text-white font-black text-xs sm:text-sm px-4 py-2 rounded-2xl shadow-[0_4px_0_#9f1239] active:translate-y-0.5 transition-all cursor-pointer"
+          className="mt-2.5 inline-flex items-center space-x-1.5 bg-rose-500 hover:bg-rose-600 text-white font-black text-xs sm:text-sm px-4 py-2 rounded-2xl shadow-[0_4px_0_#9f1239] active:translate-y-0.5 transition-all cursor-pointer"
         >
           <span>👉</span>
-          <span>Click to Mark <span className="underline font-black text-yellow-200">[{currentCalledNumber}]</span> on your card!</span>
+          <span>Tap to Mark <span className="underline font-black text-yellow-200">[{currentCalledNumber}]</span> on your card!</span>
         </button>
       )}
 
-      {/* B-I-N-G-O 3D Toy Blocks (Large, Vibrant, Playful!) */}
+      {/* B-I-N-G-O 3D Toy Blocks (Bright, Playful, Cheerful!) */}
       <div className="flex items-center justify-center space-x-2.5 sm:space-x-3.5 mt-3.5">
         {bingoLetters.map((item, idx) => {
           const isComplete = completedCount > idx;
           return (
             <div
               key={item.letter}
-              className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border-4 border-[#0b2c4d] flex items-center justify-center text-2xl sm:text-3xl font-black transition-all transform ${
+              className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border-3 border-[#0b2c4d] flex items-center justify-center text-2xl sm:text-3xl font-black transition-all transform ${
                 isComplete
                   ? 'text-white shadow-[0_5px_0_#08233d] scale-110 -translate-y-1 animate-pop'
-                  : 'bg-white/20 text-white/40 shadow-[0_2px_0_#08233d]'
+                  : 'bg-white shadow-[0_3px_0_#08233d]'
               }`}
               style={{
-                backgroundColor: isComplete ? item.color : undefined,
+                backgroundColor: isComplete ? item.color : '#ffffff',
+                color: isComplete ? '#ffffff' : item.color,
               }}
             >
               <span className="drop-shadow-sm">{item.letter}</span>
@@ -235,9 +229,9 @@ export function SkribblBingoCard({
         })}
       </div>
 
-      <div className="text-xs font-black text-white/90 mt-2 tracking-wide uppercase flex items-center justify-center space-x-1.5">
+      <div className="text-xs font-black text-white/90 mt-2 tracking-wide uppercase flex items-center justify-center space-x-1.5 bg-black/20 px-3.5 py-1 rounded-full border border-white/10">
         <span>🏆</span>
-        <span>{completedCount} of 5 Lines Completed (First to B-I-N-G-O wins!)</span>
+        <span>{completedCount} of 5 Lines Completed</span>
         <span>🎉</span>
       </div>
     </div>

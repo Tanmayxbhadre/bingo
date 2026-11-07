@@ -74,43 +74,41 @@ export function SkribblHeader() {
           </div>
         </div>
 
-        {/* Center: skribbl Turn Banner! */}
+        {/* Center: Clean skribbl Turn Clock & Status */}
         {isPlaying && (
           <div className="flex items-center space-x-2 w-full md:w-auto justify-center">
             {/* Countdown Clock */}
-            <div className="flex items-center space-x-1 bg-white text-[#0b2c4d] border-2 border-[#0b2c4d] px-2.5 py-1 rounded-xl font-black text-sm shadow-sm">
+            <div className="flex items-center space-x-1.5 bg-white text-[#0b2c4d] border-2 border-[#0b2c4d] px-3 py-1 rounded-xl font-black text-sm shadow-sm">
               <Clock className="w-4 h-4 text-[#ff4500]" />
               <span className={turnTime <= 10 ? 'text-rose-600 animate-pulse' : ''}>
                 {turnTime}s
               </span>
             </div>
 
-            {/* Turn Announcement Banner */}
+            {/* Concise Status Pill */}
             <div
-              className={`px-3 py-1.5 rounded-2xl border-2 text-xs sm:text-sm font-black text-center shadow-sm flex items-center space-x-1.5 ${
+              className={`px-3 py-1 rounded-xl border-2 text-xs font-black text-center shadow-sm flex items-center space-x-1 ${
                 isMyTurn
-                  ? 'bg-emerald-400 text-emerald-950 border-emerald-600 animate-pulse'
-                  : 'bg-yellow-300 text-yellow-950 border-yellow-500'
+                  ? 'bg-emerald-400 text-emerald-950 border-emerald-600'
+                  : currentCalled
+                  ? 'bg-rose-400 text-white border-rose-600 animate-pulse'
+                  : 'bg-white/10 text-white border-white/20'
               }`}
             >
               {isMyTurn ? (
                 <>
-                  <span>👉</span>
-                  <span>IT'S YOUR TURN! Click any number on your card to call it!</span>
+                  <span>✏️</span>
+                  <span>Your Turn</span>
                 </>
               ) : currentCalled ? (
                 <>
                   <span>📢</span>
-                  <span>
-                    <span className="underline">{turnPlayerName}</span> called [ <span className="text-pink-600 font-extrabold">{currentCalled}</span> ]! Click it on your card!
-                  </span>
+                  <span>Number [{currentCalled}]</span>
                 </>
               ) : (
                 <>
                   <span>⏳</span>
-                  <span>
-                    Waiting for <span className="underline">{turnPlayerName}</span> to call a number...
-                  </span>
+                  <span>{turnPlayerName}'s Turn</span>
                 </>
               )}
             </div>

@@ -257,27 +257,30 @@ export function RoomPage() {
               </button>
             </div>
 
-            <div className="flex flex-col lg:flex-row gap-3.5 items-stretch justify-center">
+            <div className="flex flex-col lg:flex-row gap-4 items-start justify-center">
               {/* Left Column: skribbl Player Table */}
-              <div className={`w-full lg:w-60 flex-shrink-0 ${mobileTab === 'players' ? 'block' : 'hidden lg:block'}`}>
+              <div className={`w-full lg:w-64 flex-shrink-0 ${mobileTab === 'players' ? 'block' : 'hidden lg:block'}`}>
                 <SkribblPlayerList />
               </div>
 
               {/* Middle Column: Central Game Board & Action Banner */}
-              <div className={`flex-1 w-full max-w-xl flex flex-col items-center space-y-2.5 ${mobileTab === 'card' ? 'flex' : 'hidden lg:flex'}`}>
+              <div className={`flex-1 w-full max-w-lg flex flex-col items-center space-y-2.5 ${mobileTab === 'card' ? 'flex' : 'hidden lg:flex'}`}>
                 {/* Turn Callout Banner */}
                 <div className="w-full text-center">
                   {isMyTurn ? (
-                    <div className="bg-emerald-400 text-emerald-950 border-3 border-[#0b2c4d] shadow-[0_4px_0_#08233d] p-2.5 rounded-2xl font-black text-xs sm:text-sm animate-pulse">
-                      <span>✏️ YOUR TURN! Click any number on your card to call it!</span>
+                    <div className="bg-emerald-400 text-emerald-950 border-3 border-[#0b2c4d] shadow-[0_4px_0_#08233d] py-2 px-3 rounded-2xl font-black text-xs sm:text-sm flex items-center justify-center space-x-1.5">
+                      <span>✏️</span>
+                      <span>Pick any number on your card to call it!</span>
                     </div>
                   ) : currentCalled ? (
-                    <div className="bg-yellow-300 text-yellow-950 border-3 border-[#0b2c4d] shadow-[0_4px_0_#08233d] p-2.5 rounded-2xl font-black text-xs sm:text-sm">
-                      <span>📢 {turnPlayerName} called [{currentCalled}]! Click {currentCalled} on your card to mark it!</span>
+                    <div className="bg-amber-300 text-amber-950 border-3 border-[#0b2c4d] shadow-[0_4px_0_#08233d] py-2 px-3 rounded-2xl font-black text-xs sm:text-sm flex items-center justify-center space-x-1.5 animate-pulse">
+                      <span>👉</span>
+                      <span>{turnPlayerName} called [{currentCalled}]! Tap {currentCalled} to stamp ✕!</span>
                     </div>
                   ) : (
-                    <div className="bg-white text-[#0b2c4d] border-3 border-[#0b2c4d] shadow-[0_4px_0_#08233d] p-2.5 rounded-2xl font-black text-xs sm:text-sm">
-                      <span>⏳ Waiting for {turnPlayerName} to choose a number...</span>
+                    <div className="bg-white text-[#0b2c4d] border-3 border-[#0b2c4d] shadow-[0_4px_0_#08233d] py-2 px-3 rounded-2xl font-black text-xs sm:text-sm flex items-center justify-center space-x-1.5">
+                      <span>⏳</span>
+                      <span>Waiting for {turnPlayerName} to choose...</span>
                     </div>
                   )}
                 </div>
@@ -292,15 +295,10 @@ export function RoomPage() {
                   completedCount={roomState.myCompletedCount}
                   completedLines={roomState.myCompletedLines || []}
                 />
-
-                {/* Floating Emoji Reactions Bar */}
-                <div className="w-full mt-1">
-                  <EmojiReactionTray />
-                </div>
               </div>
 
               {/* Right Column: skribbl Chat & Called Numbers */}
-              <div className={`w-full lg:w-72 flex-shrink-0 ${mobileTab === 'chat' ? 'block' : 'hidden lg:block'}`}>
+              <div className={`w-full lg:w-80 flex-shrink-0 ${mobileTab === 'chat' ? 'block' : 'hidden lg:block'}`}>
                 <SkribblChat calledNumbers={roomState.calledNumbers} />
               </div>
             </div>
