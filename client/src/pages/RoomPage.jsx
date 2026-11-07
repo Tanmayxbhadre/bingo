@@ -7,6 +7,7 @@ import { SkribblBingoCard } from '../components/SkribblBingoCard.jsx';
 import { SkribblPlayerList } from '../components/SkribblPlayerList.jsx';
 import { SkribblChat } from '../components/SkribblChat.jsx';
 import { WinnerModal } from '../components/WinnerModal.jsx';
+import { EmojiReactionTray } from '../components/EmojiReactionTray.jsx';
 import { ROOM_STATUS } from '@shared/constants/gameConstants.js';
 import { sounds } from '../services/soundEffects.js';
 
@@ -187,6 +188,11 @@ export function RoomPage() {
                 </div>
               )}
             </div>
+
+            {/* Quick Lobby Reactions */}
+            <div className="pt-2">
+              <EmojiReactionTray />
+            </div>
           </div>
         ) : (
           /* ==================== SKRIBBL 3-COLUMN GAMEPLAY VIEW ==================== */
@@ -261,7 +267,13 @@ export function RoomPage() {
                   calledNumbers={roomState.calledNumbers}
                   winningCells={roomState.myWinningCells}
                   completedCount={roomState.myCompletedCount}
+                  completedLines={roomState.myCompletedLines || []}
                 />
+
+                {/* Floating Emoji Reactions Bar */}
+                <div className="w-full mt-1">
+                  <EmojiReactionTray />
+                </div>
               </div>
 
               {/* Right Column: skribbl Chat & Called Numbers */}

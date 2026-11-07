@@ -153,8 +153,10 @@ export function HomePage() {
         {/* skribbl.io Logo */}
         <div className="text-center mb-4">
           <SkribblLogo size="large" />
-          <div className="text-white/80 font-bold text-xs mt-1">
-            Free Multiplayer Bingo Game with Friends!
+          <div className="text-white font-extrabold text-xs sm:text-sm mt-1.5 flex items-center justify-center space-x-1.5">
+            <span>🎉</span>
+            <span>Free Real-Time Multiplayer Bingo Game!</span>
+            <span>🎯</span>
           </div>
         </div>
 
@@ -255,19 +257,19 @@ export function HomePage() {
         </div>
 
         {/* How To Play Box */}
-        <div className="mt-4 bg-white/10 border-2 border-white/20 rounded-2xl p-3 text-white text-xs space-y-1 text-center">
-          <div className="font-black text-yellow-300 flex items-center justify-center space-x-1">
-            <HelpCircle className="w-3.5 h-3.5" />
-            <span>HOW TO PLAY</span>
+        <div className="mt-4 bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-3xl p-3.5 text-white text-xs space-y-1.5 text-center shadow-lg">
+          <div className="font-black text-yellow-300 flex items-center justify-center space-x-1.5 tracking-wider text-xs">
+            <HelpCircle className="w-4 h-4 text-yellow-300" />
+            <span>HOW TO PLAY BINGO.IO</span>
           </div>
-          <p className="text-slate-200">
-            1. Players take turns calling numbers from their 5×5 card!
+          <p className="text-slate-200 font-semibold">
+            🎲 1. Take turns picking a number from your card to call it!
           </p>
-          <p className="text-slate-200">
-            2. When opponent calls a number, click it on your card to mark it!
+          <p className="text-slate-200 font-semibold">
+            🖍️ 2. When opponent calls, click it to stamp a red <span className="font-black text-rose-300">✕</span>!
           </p>
-          <p className="text-slate-200">
-            3. Complete any 5 lines to get <span className="font-bold text-yellow-300">B-I-N-G-O</span>!
+          <p className="text-slate-200 font-semibold">
+            🏆 3. Complete any 5 lines to trigger <span className="font-black text-yellow-300 underline">B-I-N-G-O!</span>
           </p>
         </div>
       </div>

@@ -102,13 +102,16 @@ export function SkribblChat({ calledNumbers = [] }) {
       </div>
 
       {/* Quick Emoji Bar */}
-      <div className="flex items-center space-x-1 mb-1.5 px-0.5">
-        {['🎉', '🎯', '✏️', '🔥', '😱'].map((emoji) => (
+      <div className="flex items-center space-x-1 mb-1.5 px-0.5 overflow-x-auto">
+        {['🎉', '🎯', '✏️', '🔥', '😱', '😎', '😂', '👏', '⭐'].map((emoji) => (
           <button
             key={emoji}
             type="button"
-            onClick={() => setChatInput((prev) => (prev ? `${prev} ${emoji}` : emoji))}
-            className="text-xs p-1 rounded-lg hover:bg-slate-100 transition-colors"
+            onClick={() => {
+              sounds.playPop();
+              setChatInput((prev) => (prev ? `${prev} ${emoji}` : emoji));
+            }}
+            className="text-sm p-1 rounded-lg hover:bg-slate-100 transition-transform active:scale-90"
           >
             {emoji}
           </button>

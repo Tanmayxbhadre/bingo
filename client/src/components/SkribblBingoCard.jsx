@@ -10,6 +10,7 @@ export function SkribblBingoCard({
   calledNumbers = [],
   winningCells = [],
   completedCount = 0,
+  completedLines = [],
 }) {
   const { callNumber, markNumber } = useGame();
   const calledSet = new Set(calledNumbers);
@@ -54,7 +55,78 @@ export function SkribblBingoCard({
   return (
     <div className="flex flex-col items-center w-full max-w-lg mx-auto">
       {/* 5x5 Drawing Canvas Card */}
-      <div className="w-full bg-white rounded-3xl border-4 border-[#0b2c4d] shadow-[0_8px_0_#08233d] p-3 sm:p-4">
+      <div className="relative w-full bg-white rounded-3xl border-4 border-[#0b2c4d] shadow-[0_8px_0_#08233d] p-3 sm:p-4">
+        {/* Animated Hand-drawn Marker Strike-through for Completed Lines */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none z-10 p-3 sm:p-4">
+          {completedLines.map((lineId) => {
+            if (lineId.startsWith('row-')) {
+              const r = parseInt(lineId.split('-')[1], 10);
+              const y = `${10 + r * 20}%`;
+              return (
+                <line
+                  key={lineId}
+                  x1="4%"
+                  y1={y}
+                  x2="96%"
+                  y2={y}
+                  stroke="#e74c3c"
+                  strokeWidth="6"
+                  strokeLinecap="round"
+                  className="opacity-80 drop-shadow-sm"
+                />
+              );
+            }
+            if (lineId.startsWith('col-')) {
+              const c = parseInt(lineId.split('-')[1], 10);
+              const x = `${10 + c * 20}%`;
+              return (
+                <line
+                  key={lineId}
+                  x1={x}
+                  y1="4%"
+                  x2={x}
+                  y2="96%"
+                  stroke="#e74c3c"
+                  strokeWidth="6"
+                  strokeLinecap="round"
+                  className="opacity-80 drop-shadow-sm"
+                />
+              );
+            }
+            if (lineId === 'diag-main') {
+              return (
+                <line
+                  key={lineId}
+                  x1="6%"
+                  y1="6%"
+                  x2="94%"
+                  y2="94%"
+                  stroke="#e74c3c"
+                  strokeWidth="6"
+                  strokeLinecap="round"
+                  className="opacity-80 drop-shadow-sm"
+                />
+              );
+            }
+            if (lineId === 'diag-anti') {
+              return (
+                <line
+                  key={lineId}
+                  x1="94%"
+                  y1="6%"
+                  x2="6%"
+                  y2="94%"
+                  stroke="#e74c3c"
+                  strokeWidth="6"
+                  strokeLinecap="round"
+                  className="opacity-80 drop-shadow-sm"
+                />
+              );
+            }
+            return null;
+          })}
+        </svg>
+
         <div className="grid grid-cols-5 gap-2 sm:gap-2.5">
           {card.map((cell) => {
             const isMarked = cell.marked;
@@ -143,7 +215,7 @@ export function SkribblBingoCard({
           return (
             <div
               key={item.letter}
-              className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border-4 border-[#0b2c4d] flex items-center justify-center text-2xl sm:text-3xl font-black transition-all transform ${
+              className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border-4 border-[#0b2c4d] flex items-center justify-center text-2xl sm:text-3xl font-black transition-all transform ${
                 isComplete
                   ? 'text-white shadow-[0_5px_0_#08233d] scale-110 -translate-y-1 animate-pop'
                   : 'bg-white/20 text-white/40 shadow-[0_2px_0_#08233d]'
@@ -153,13 +225,20 @@ export function SkribblBingoCard({
               }}
             >
               <span className="drop-shadow-sm">{item.letter}</span>
+              {isComplete && (
+                <span className="absolute -top-2 -right-1.5 text-xs select-none animate-bounce">
+                  ⭐
+                </span>
+              )}
             </div>
           );
         })}
       </div>
 
-      <div className="text-xs font-black text-white/90 mt-2 tracking-wide uppercase">
-        {completedCount} of 5 Lines Completed (First to B-I-N-G-O wins!)
+      <div className="text-xs font-black text-white/90 mt-2 tracking-wide uppercase flex items-center justify-center space-x-1.5">
+        <span>🏆</span>
+        <span>{completedCount} of 5 Lines Completed (First to B-I-N-G-O wins!)</span>
+        <span>🎉</span>
       </div>
     </div>
   );

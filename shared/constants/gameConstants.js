@@ -2,13 +2,13 @@ export const GAME_CONFIG = {
   GRID_SIZE: 5,
   TOTAL_CELLS: 25,
   MIN_NUMBER: 1,
-  MAX_NUMBER: 25, // All numbers are strictly between 1 and 25
+  MAX_NUMBER: 25,
   WINNING_LINE_COUNT: 5,
-  TOTAL_POSSIBLE_LINES: 12, // 5 rows + 5 cols + 2 diagonals
+  TOTAL_POSSIBLE_LINES: 12,
   DEFAULT_TURN_TIME_SEC: 45,
   DEFAULT_MAX_PLAYERS: 12,
   RECONNECT_GRACE_PERIOD_MS: 45000,
-  CHAT_RATE_LIMIT_MS: 600,
+  CHAT_RATE_LIMIT_MS: 500,
   ROOM_CODE_LENGTH: 6,
 };
 
@@ -38,11 +38,14 @@ export const SOCKET_EVENTS = {
   PLAY_AGAIN: 'play_again',
 
   // Turn-based number calling & marking
-  CALL_NUMBER: 'call_number', // Active turn player calls a number
-  MARK_NUMBER: 'mark_number', // Opponents click to mark a called number on their card
+  CALL_NUMBER: 'call_number',
+  MARK_NUMBER: 'mark_number',
   NUMBER_CALLED: 'number_called',
   CELL_MARKED: 'cell_marked',
   TURN_CHANGED: 'turn_changed',
+
+  // Real-time floating emoji reaction
+  REACTION_EMOJI: 'reaction_emoji',
 
   // Chat
   CHAT_MESSAGE: 'chat_message',
@@ -52,27 +55,33 @@ export const SOCKET_EVENTS = {
 };
 
 export const SKRIBBL_COLORS = [
-  '#55b338', // Green
-  '#0084ff', // Blue
-  '#ff4500', // Orange-Red
-  '#ffb703', // Yellow
-  '#9b5de5', // Purple
-  '#f15bb5', // Pink
-  '#00bbcb', // Teal
-  '#8338ec', // Violet
+  '#55b338', // Playful Green
+  '#0084ff', // Vibrant Blue
+  '#ff4500', // Comic Orange-Red
+  '#ffb703', // Warm Yellow
+  '#9b5de5', // Candy Purple
+  '#f15bb5', // Hot Pink
+  '#00bbcb', // Aqua Cyan
+  '#8338ec', // Deep Violet
+  '#fb5607', // Fire Orange
+  '#3a86ff', // Sky Blue
 ];
 
 export const AVATARS = [
-  { id: 'happy', emoji: '😃', label: 'Happy', color: '#ffb703' },
-  { id: 'cool', emoji: '😎', label: 'Cool', color: '#0084ff' },
-  { id: 'wink', emoji: '😉', label: 'Wink', color: '#55b338' },
-  { id: 'dizzy', emoji: '😵', label: 'Dizzy', color: '#9b5de5' },
-  { id: 'nerd', emoji: '🤓', label: 'Nerd', color: '#ff4500' },
-  { id: 'star', emoji: '🤩', label: 'Starry', color: '#ffb703' },
-  { id: 'surprised', emoji: '😮', label: 'Surprised', color: '#00bbcb' },
-  { id: 'love', emoji: '😍', label: 'Love', color: '#f15bb5' },
-  { id: 'smug', emoji: '😏', label: 'Smug', color: '#55b338' },
-  { id: 'party', emoji: '🥳', label: 'Party', color: '#ff8c00' },
-  { id: 'sleepy', emoji: '😴', label: 'Sleepy', color: '#8338ec' },
-  { id: 'clown', emoji: '🤡', label: 'Joker', color: '#ff4500' },
+  { id: 'cool', emoji: '😎', label: 'Cool Shades', color: '#0084ff' },
+  { id: 'party', emoji: '🥳', label: 'Party Time', color: '#ff8c00' },
+  { id: 'star', emoji: '🤩', label: 'Starry Eyes', color: '#ffb703' },
+  { id: 'cowboy', emoji: '🤠', label: 'Cowboy', color: '#ff4500' },
+  { id: 'nerd', emoji: '🤓', label: 'Brainiac', color: '#55b338' },
+  { id: 'happy', emoji: '😃', label: 'Big Smile', color: '#ffb703' },
+  { id: 'wink', emoji: '😉', label: 'Playful Wink', color: '#55b338' },
+  { id: 'fire', emoji: '🔥', label: 'On Fire', color: '#ff4500' },
+  { id: 'cat', emoji: '🐱', label: 'Cool Kitty', color: '#f15bb5' },
+  { id: 'dog', emoji: '🐶', label: 'Happy Pup', color: '#0084ff' },
+  { id: 'fox', emoji: '🦊', label: 'Speedy Fox', color: '#fb5607' },
+  { id: 'panda', emoji: '🐼', label: 'Chill Panda', color: '#55b338' },
+  { id: 'lion', emoji: '🦁', label: 'Brave Lion', color: '#ffb703' },
+  { id: 'monkey', emoji: '🐵', label: 'Cheeky Monkey', color: '#ff8c00' },
+  { id: 'unicorn', emoji: '🦄', label: 'Magic Horn', color: '#9b5de5' },
+  { id: 'ghost', emoji: '👻', label: 'Spooky', color: '#00bbcb' },
 ];

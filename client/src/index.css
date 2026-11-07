@@ -78,3 +78,45 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #718096;
 }
+
+/* Floating Emoji Reactions Animation */
+@keyframes floatUp {
+  0% {
+    transform: translateY(0) scale(0.6) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(-20px) scale(1.2) rotate(-8deg);
+  }
+  50% {
+    transform: translateY(-130px) scale(1) rotate(8deg);
+  }
+  80% {
+    opacity: 0.9;
+    transform: translateY(-240px) scale(0.9) rotate(-6deg);
+  }
+  100% {
+    transform: translateY(-360px) scale(0.7) rotate(12deg);
+    opacity: 0;
+  }
+}
+
+.animate-float-up {
+  animation: floatUp 2.4s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+}
+
+/* Gentle Floating Doodles Animation */
+@keyframes gentleFloat {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(6deg);
+  }
+}
+
+.animate-gentle-float {
+  animation: gentleFloat 5s ease-in-out infinite;
+}
+

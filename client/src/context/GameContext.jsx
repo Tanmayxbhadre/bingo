@@ -29,6 +29,7 @@ export function GameProvider({ children }) {
   const [isMuted, setIsMuted] = useState(sounds.isMuted);
   const [turnTime, setTurnTime] = useState(45);
   const [lastMarkedNumber, setLastMarkedNumber] = useState(null);
+  const [floatingReactions, setFloatingReactions] = useState([]);
 
   const currentAvatar = AVATARS[avatarIndex] || AVATARS[0];
 
@@ -168,6 +169,15 @@ export function GameProvider({ children }) {
           chatMessages: [...prev.chatMessages, msg].slice(-50),
         };
       });
+    });
+
+    // Real-time floating emoji reaction
+    socket.on(SOCKET_EVENTS.REACTION_EMOJI, (reaction) => {
+      sounds.playReaction();
+      setFloatingReactions((prev) => [...prev.slice(-15), reaction]);
+      setTimeout(() => {
+        setFloatingReactions((prev) => prev.filter((r) => r.id !== reaction.id));
+      }, 2400);
     });
 
     return () => {
@@ -359,6 +369,11 @@ export function GameProvider({ children }) {
     });
   };
 
+  const sendReaction = (emoji) => {
+    if (!socketRef.current) return;
+    socketRef.current.emit(SOCKET_EVENTS.REACTION_EMOJI, { emoji });
+  };
+
   return (
     <GameContext.Provider
       value={{
@@ -377,6 +392,8 @@ export function GameProvider({ children }) {
         toggleSound,
         turnTime,
         lastMarkedNumber,
+        floatingReactions,
+        sendReaction,
         createRoom,
         joinRoom,
         leaveRoom,

@@ -330,6 +330,29 @@ export function setupSocketHandlers(io) {
       }
     });
 
+    // 10b. Real-Time Floating Emoji Reaction
+    socket.on(SOCKET_EVENTS.REACTION_EMOJI, (payload) => {
+      try {
+        const record = roomManager.getRoomBySocket(socket.id);
+        if (!record || !record.room) return;
+        const { room, sessionToken } = record;
+        const player = room.players.get(sessionToken);
+        const emoji = String(payload?.emoji || '🎉').slice(0, 6);
+
+        io.to(room.code).emit(SOCKET_EVENTS.REACTION_EMOJI, {
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          emoji,
+          senderSessionToken: sessionToken,
+          senderName: player ? player.name : 'Someone',
+          senderColor: player ? player.avatarColor : '#0084ff',
+          xPos: Math.floor(Math.random() * 70) + 15,
+          timestamp: Date.now(),
+        });
+      } catch (err) {
+        console.error('Reaction emoji error:', err);
+      }
+    });
+
     // 11. Leave Room
     socket.on(SOCKET_EVENTS.LEAVE_ROOM, () => {
       handleUserLeave(socket);

@@ -180,6 +180,31 @@ class SoundEffects {
       });
     } catch (e) {}
   }
+
+  // Playful Emoji Bubble Reaction Pop
+  playReaction() {
+    if (this.isMuted) return;
+    this.init();
+    if (!this.ctx) return;
+
+    try {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(580, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1180, this.ctx.currentTime + 0.1);
+
+      gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.11);
+    } catch (e) {}
+  }
 }
 
 export const sounds = new SoundEffects();
