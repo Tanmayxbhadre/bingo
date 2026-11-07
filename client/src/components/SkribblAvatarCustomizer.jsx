@@ -27,15 +27,16 @@ export function SkribblAvatarCustomizer({
 
   return (
     <div className="flex flex-col items-center select-none w-full max-w-xs mx-auto">
-      {/* Avatar Face with Left/Right Arrows */}
+      {/* Avatar Face with Chunky Cartoon Arrow Buttons */}
       <div className="flex items-center justify-center space-x-3 w-full">
+        {/* Left Arrow Button */}
         <button
           type="button"
           onClick={handlePrev}
-          className="w-10 h-10 rounded-2xl bg-white hover:bg-slate-100 border-3 border-[#0b2c4d] shadow-[0_3px_0_#08233d] text-[#0b2c4d] flex items-center justify-center font-black transition-transform active:translate-y-0.5"
-          title="Previous Face"
+          className="w-11 h-11 rounded-2xl bg-yellow-400 hover:bg-yellow-300 text-[#0b2c4d] border-4 border-[#0b2c4d] shadow-[0_4px_0_#08233d] flex items-center justify-center font-black transition-all active:translate-y-1 active:shadow-none cursor-pointer"
+          title="Previous Avatar"
         >
-          <ChevronLeft className="w-6 h-6 stroke-[3]" />
+          <ChevronLeft className="w-6 h-6 stroke-[3.5]" />
         </button>
 
         {/* Character Box */}
@@ -43,37 +44,40 @@ export function SkribblAvatarCustomizer({
           className="relative w-28 h-28 rounded-3xl border-4 border-[#0b2c4d] shadow-[0_6px_0_#08233d] flex flex-col items-center justify-center transition-all duration-200 cursor-pointer"
           style={{ backgroundColor: avatarColor }}
           onClick={() => setShowGrid(!showGrid)}
-          title="Click to choose avatar!"
+          title="Click to browse all avatars!"
         >
           <span className="text-6xl drop-shadow-md transform hover:scale-110 transition-transform">
             {currentAvatar.emoji}
           </span>
+
+          {/* Randomize Dice Button */}
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
               onRandomize();
             }}
-            className="absolute -top-2 -right-2 bg-yellow-400 hover:bg-yellow-300 text-yellow-950 p-1.5 rounded-xl border-2 border-[#0b2c4d] shadow-sm transition-transform active:scale-90"
-            title="Randomize Avatar"
+            className="absolute -top-2.5 -right-2.5 w-8 h-8 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-yellow-950 border-3 border-[#0b2c4d] shadow-[0_2px_0_#08233d] flex items-center justify-center transition-transform active:scale-90 cursor-pointer"
+            title="Randomize Face & Color"
           >
-            <Dices className="w-4 h-4" />
+            <Dices className="w-4 h-4 stroke-[2.5]" />
           </button>
         </div>
 
+        {/* Right Arrow Button */}
         <button
           type="button"
           onClick={handleNext}
-          className="w-10 h-10 rounded-2xl bg-white hover:bg-slate-100 border-3 border-[#0b2c4d] shadow-[0_3px_0_#08233d] text-[#0b2c4d] flex items-center justify-center font-black transition-transform active:translate-y-0.5"
-          title="Next Face"
+          className="w-11 h-11 rounded-2xl bg-yellow-400 hover:bg-yellow-300 text-[#0b2c4d] border-4 border-[#0b2c4d] shadow-[0_4px_0_#08233d] flex items-center justify-center font-black transition-all active:translate-y-1 active:shadow-none cursor-pointer"
+          title="Next Avatar"
         >
-          <ChevronRight className="w-6 h-6 stroke-[3]" />
+          <ChevronRight className="w-6 h-6 stroke-[3.5]" />
         </button>
       </div>
 
       {/* Avatar Label & Quick Grid Toggle */}
       <div className="flex items-center space-x-2 mt-2">
-        <span className="text-xs font-black text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-300">
+        <span className="text-xs font-black text-[#0b2c4d] bg-slate-100 px-3 py-0.5 rounded-full border border-slate-300">
           {currentAvatar.label} {currentAvatar.emoji}
         </span>
         <button
@@ -82,16 +86,16 @@ export function SkribblAvatarCustomizer({
             sounds.playPop();
             setShowGrid(!showGrid);
           }}
-          className="text-[11px] font-black text-[#0084ff] hover:underline flex items-center space-x-0.5"
+          className="text-[11px] font-black text-[#0084ff] hover:underline flex items-center space-x-0.5 cursor-pointer"
         >
           <SmilePlus className="w-3.5 h-3.5" />
-          <span>{showGrid ? 'Hide' : 'All'}</span>
+          <span>{showGrid ? 'Close' : 'All'}</span>
         </button>
       </div>
 
-      {/* All 16 Avatars Emoji Grid (Expandable) */}
+      {/* All 16 Avatars Emoji Grid Popup */}
       {showGrid && (
-        <div className="mt-2.5 bg-[#f0f4f8] border-2 border-slate-300 rounded-2xl p-2 grid grid-cols-4 gap-1.5 animate-pop w-full shadow-inner">
+        <div className="mt-2.5 bg-[#f0f4f8] border-3 border-[#0b2c4d] rounded-2xl p-2 grid grid-cols-4 gap-1.5 animate-pop w-full shadow-lg">
           {AVATARS.map((av, idx) => {
             const isSelected = avatarIndex === idx;
             return (
@@ -105,7 +109,7 @@ export function SkribblAvatarCustomizer({
                 }}
                 className={`p-1.5 rounded-xl text-2xl flex items-center justify-center transition-all ${
                   isSelected
-                    ? 'bg-yellow-300 border-2 border-[#0b2c4d] scale-110 shadow-sm'
+                    ? 'bg-yellow-300 border-3 border-[#0b2c4d] scale-110 shadow-sm'
                     : 'bg-white hover:bg-slate-100 border border-slate-200'
                 }`}
                 title={av.label}
@@ -117,8 +121,8 @@ export function SkribblAvatarCustomizer({
         </div>
       )}
 
-      {/* Color Swatch Dots */}
-      <div className="flex items-center justify-center flex-wrap gap-1.5 mt-2.5 max-w-[260px]">
+      {/* Clean 5x2 Symmetrical Color Swatch Grid */}
+      <div className="grid grid-cols-5 gap-2.5 mt-3 max-w-[200px] mx-auto">
         {SKRIBBL_COLORS.map((col) => {
           const isSelected = avatarColor === col;
           return (
@@ -129,9 +133,9 @@ export function SkribblAvatarCustomizer({
                 sounds.playPop();
                 onChangeColor(col);
               }}
-              className={`w-6 h-6 rounded-full border-2 border-[#0b2c4d] transition-all transform ${
+              className={`w-7 h-7 rounded-full border-3 border-[#0b2c4d] transition-all transform cursor-pointer ${
                 isSelected
-                  ? 'scale-125 ring-2 ring-white shadow-md -translate-y-0.5'
+                  ? 'scale-120 ring-3 ring-white shadow-md -translate-y-0.5'
                   : 'hover:scale-110'
               }`}
               style={{ backgroundColor: col }}

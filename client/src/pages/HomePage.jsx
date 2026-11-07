@@ -148,21 +148,21 @@ export function HomePage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between p-3 sm:p-6 text-slate-800">
-      <div className="max-w-md mx-auto w-full my-auto">
+    <div className="min-h-screen flex flex-col items-center justify-center p-3 sm:p-4 text-slate-800 select-none">
+      <div className="max-w-md mx-auto w-full my-auto flex flex-col items-center">
         {/* skribbl.io Logo */}
-        <div className="text-center mb-4">
+        <div className="text-center mb-3">
           <SkribblLogo size="large" />
-          <div className="text-white font-extrabold text-xs sm:text-sm mt-1.5 flex items-center justify-center space-x-1.5">
+          <div className="text-white font-extrabold text-xs sm:text-sm mt-1 flex items-center justify-center space-x-1.5 drop-shadow-sm">
             <span>🎉</span>
-            <span>Free Real-Time Multiplayer Bingo Game!</span>
+            <span>Live Multiplayer 5×5 Bingo!</span>
             <span>🎯</span>
           </div>
         </div>
 
         {/* Global Error Banner */}
         {error && (
-          <div className="mb-3 bg-[#e74c3c] text-white p-2.5 rounded-2xl border-2 border-[#962d22] font-black text-xs text-center shadow-md animate-pop">
+          <div className="mb-3 w-full bg-[#e74c3c] text-white p-2.5 rounded-2xl border-2 border-[#962d22] font-black text-xs text-center shadow-md animate-pop">
             <span>{error}</span>
             <button onClick={clearError} className="underline ml-2">
               Dismiss
@@ -171,7 +171,7 @@ export function HomePage() {
         )}
 
         {/* Central skribbl.io Box */}
-        <div className="bg-white rounded-3xl border-4 border-[#0b2c4d] shadow-[0_8px_0_#08233d] p-5 sm:p-6 space-y-4">
+        <div className="w-full bg-white rounded-3xl border-4 border-[#0b2c4d] shadow-[0_8px_0_#08233d] p-4 sm:p-5 space-y-3">
           {/* Avatar Customizer */}
           <SkribblAvatarCustomizer
             avatarIndex={currentAvatarIdx}
@@ -190,7 +190,7 @@ export function HomePage() {
               onBlur={handleNameBlur}
               maxLength={16}
               placeholder="Enter your name"
-              className="w-full bg-[#f4f7fa] border-3 border-[#0b2c4d] text-[#0b2c4d] placeholder-slate-400 font-extrabold text-center text-lg rounded-2xl py-2.5 focus:outline-none focus:ring-2 focus:ring-[#0084ff]"
+              className="w-full bg-[#f4f7fa] border-4 border-[#0b2c4d] text-[#0b2c4d] placeholder-slate-400 font-black text-center text-lg rounded-2xl py-2.5 focus:outline-none focus:ring-4 focus:ring-[#0084ff]/30 transition-all"
             />
           </div>
 
@@ -198,20 +198,20 @@ export function HomePage() {
           <button
             onClick={handleQuickPlay}
             disabled={isLoading}
-            className="w-full skribbl-btn-green py-3.5 rounded-2xl text-xl flex items-center justify-center space-x-2 tracking-wide"
+            className="w-full skribbl-btn-green py-3.5 rounded-2xl text-xl font-black flex items-center justify-center space-x-2 tracking-wide cursor-pointer"
           >
             <Play className="w-6 h-6 fill-white" />
             <span>{isLoading ? 'Entering...' : 'Play!'}</span>
           </button>
 
           {/* Action Row: Create Private Room & Public Games */}
-          <div className="grid grid-cols-2 gap-2.5 pt-1">
+          <div className="grid grid-cols-2 gap-2.5 pt-0.5">
             <button
               onClick={() => {
                 sounds.playPop();
                 setShowCreateModal(true);
               }}
-              className="skribbl-btn-blue py-2.5 rounded-2xl text-xs sm:text-sm flex items-center justify-center space-x-1"
+              className="skribbl-btn-blue py-2.5 rounded-2xl text-xs sm:text-sm font-black flex items-center justify-center space-x-1 cursor-pointer"
             >
               <PlusCircle className="w-4 h-4" />
               <span>Create Room</span>
@@ -223,7 +223,7 @@ export function HomePage() {
                 fetchPublicRooms();
                 setShowPublicModal(true);
               }}
-              className="skribbl-btn-orange py-2.5 rounded-2xl text-xs sm:text-sm flex items-center justify-center space-x-1"
+              className="skribbl-btn-orange py-2.5 rounded-2xl text-xs sm:text-sm font-black flex items-center justify-center space-x-1 cursor-pointer"
             >
               <Globe className="w-4 h-4" />
               <span>Rooms ({publicRooms.length})</span>
@@ -232,22 +232,19 @@ export function HomePage() {
 
           {/* Join by Room Code Box */}
           <div className="pt-2 border-t-2 border-slate-200">
-            <label className="block text-[11px] font-black uppercase text-slate-500 mb-1 text-center">
-              Have a Room Code?
-            </label>
             <div className="flex items-center space-x-2">
               <input
                 type="text"
                 value={joinCode}
                 onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                placeholder="ENTER CODE"
+                placeholder="ENTER ROOM CODE"
                 maxLength={6}
-                className="flex-1 bg-[#f4f7fa] border-2 border-[#0b2c4d] text-center font-mono font-black text-[#0b2c4d] placeholder-slate-400 rounded-xl py-2 uppercase text-base focus:outline-none"
+                className="flex-1 bg-[#f4f7fa] border-3 border-[#0b2c4d] text-center font-mono font-black text-[#0b2c4d] placeholder-slate-400 rounded-xl py-2 uppercase text-sm focus:outline-none focus:ring-2 focus:ring-[#0084ff]"
               />
               <button
                 onClick={() => handleJoinSubmit()}
                 disabled={joinCode.trim().length < 4 || isLoading}
-                className="skribbl-btn-green px-4 py-2 rounded-xl text-sm flex items-center space-x-1 disabled:opacity-50"
+                className="skribbl-btn-green px-4 py-2 rounded-xl text-sm font-black flex items-center space-x-1 disabled:opacity-50 cursor-pointer"
               >
                 <span>Join</span>
                 <ArrowRight className="w-4 h-4" />
@@ -256,28 +253,19 @@ export function HomePage() {
           </div>
         </div>
 
-        {/* How To Play Box */}
-        <div className="mt-4 bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-3xl p-3.5 text-white text-xs space-y-1.5 text-center shadow-lg">
-          <div className="font-black text-yellow-300 flex items-center justify-center space-x-1.5 tracking-wider text-xs">
-            <HelpCircle className="w-4 h-4 text-yellow-300" />
-            <span>HOW TO PLAY BINGO.IO</span>
-          </div>
-          <p className="text-slate-200 font-semibold">
-            🎲 1. Take turns picking a number from your card to call it!
-          </p>
-          <p className="text-slate-200 font-semibold">
-            🖍️ 2. When opponent calls, click it to stamp a red <span className="font-black text-rose-300">✕</span>!
-          </p>
-          <p className="text-slate-200 font-semibold">
-            🏆 3. Complete any 5 lines to trigger <span className="font-black text-yellow-300 underline">B-I-N-G-O!</span>
-          </p>
+        {/* Compact How To Play Pill */}
+        <div className="mt-3 bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-2xl px-4 py-2 text-white text-[11px] text-center shadow-md">
+          <span className="font-black text-yellow-300 mr-1.5">💡 HOW TO PLAY:</span>
+          <span className="text-slate-200">
+            Take turns calling 1–25 • Tap opponent's number to stamp <span className="font-black text-rose-300">✕</span> • Complete 5 lines to WIN! 🏆
+          </span>
         </div>
-      </div>
 
-      {/* Footer */}
-      <footer className="text-center text-xs text-white/60 mt-4">
-        Bingo.io — skribbl.io style multiplayer Bingo
-      </footer>
+        {/* Footer */}
+        <footer className="text-center text-[10px] text-white/50 mt-2">
+          Bingo.io — skribbl.io style multiplayer Bingo
+        </footer>
+      </div>
 
       {/* CREATE ROOM MODAL */}
       {showCreateModal && (

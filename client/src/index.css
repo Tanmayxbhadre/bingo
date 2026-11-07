@@ -13,6 +13,12 @@
   }
 }
 
+@layer utilities {
+  .border-3 {
+    border-width: 3px;
+  }
+}
+
 /* skribbl.io cartoon buttons */
 .skribbl-btn-green {
   background-color: #55b338;
