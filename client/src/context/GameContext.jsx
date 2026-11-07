@@ -30,6 +30,8 @@ export function GameProvider({ children }) {
   const [turnTime, setTurnTime] = useState(45);
   const [lastMarkedNumber, setLastMarkedNumber] = useState(null);
 
+  const currentAvatar = AVATARS[avatarIndex] || AVATARS[0];
+
   const socketRef = useRef(null);
   const currentRoomCodeRef = useRef(null);
   const nameRef = useRef(name);

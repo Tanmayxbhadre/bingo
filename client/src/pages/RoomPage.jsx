@@ -24,6 +24,7 @@ export function RoomPage() {
 
   const [copied, setCopied] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
+  const [mobileTab, setMobileTab] = useState('card'); // 'card' | 'players' | 'chat'
 
   useEffect(() => {
     if (roomCode && connected) {
