@@ -6,11 +6,83 @@
   body {
     @apply m-0 p-0 overflow-x-hidden text-slate-900;
     font-family: 'Fredoka', 'Comic Neue', cursive, system-ui, sans-serif;
-    background-color: #0e3860;
-    background-image: radial-gradient(rgba(255, 255, 255, 0.08) 2px, transparent 2px);
-    background-size: 24px 24px;
+    background: radial-gradient(circle at 50% 25%, #185a9d 0%, #0d3862 50%, #061c33 100%);
     min-height: 100vh;
   }
+}
+
+/* Animated diagonal comic dot pattern */
+.game-bg-pattern {
+  position: fixed;
+  inset: 0;
+  background-image: 
+    radial-gradient(rgba(255, 255, 255, 0.14) 2.5px, transparent 2.5px),
+    radial-gradient(rgba(255, 255, 255, 0.06) 1.5px, transparent 1.5px);
+  background-size: 32px 32px, 16px 16px;
+  background-position: 0 0, 8px 8px;
+  animation: bgPan 30s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes bgPan {
+  0% {
+    background-position: 0 0, 8px 8px;
+  }
+  100% {
+    background-position: 64px 64px, 72px 72px;
+  }
+}
+
+@keyframes orbFloat {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -25px) scale(1.08);
+  }
+  66% {
+    transform: translate(-25px, 20px) scale(0.95);
+  }
+}
+
+.animate-orb-1 {
+  animation: orbFloat 14s ease-in-out infinite;
+}
+.animate-orb-2 {
+  animation: orbFloat 18s ease-in-out infinite reverse;
+}
+.animate-orb-3 {
+  animation: orbFloat 22s ease-in-out infinite 2s;
+}
+
+/* 3D Bingo Ball Float */
+@keyframes floatBall {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-16px) rotate(8deg);
+  }
+}
+
+@keyframes floatBallAlt {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-22px) rotate(-10deg);
+  }
+}
+
+.animate-ball-1 {
+  animation: floatBall 6s ease-in-out infinite;
+}
+.animate-ball-2 {
+  animation: floatBallAlt 7.5s ease-in-out infinite 1s;
+}
+.animate-ball-3 {
+  animation: floatBall 8s ease-in-out infinite 2s;
 }
 
 @layer utilities {
