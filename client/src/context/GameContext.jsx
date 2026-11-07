@@ -269,6 +269,7 @@ export function GameProvider({ children }) {
       socketRef.current.emit(SOCKET_EVENTS.LEAVE_ROOM);
     }
     setRoomState(null);
+    setError(null);
   };
 
   const startGame = () => {

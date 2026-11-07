@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Play, Copy, Check, Share2, Crown } from 'lucide-react';
+import { Play, Copy, Check, Share2, Crown, Home } from 'lucide-react';
 import { useGame } from '../context/GameContext.jsx';
 import { SkribblHeader } from '../components/SkribblHeader.jsx';
 import { SkribblBingoCard } from '../components/SkribblBingoCard.jsx';
@@ -17,6 +17,7 @@ export function RoomPage() {
   const {
     roomState,
     joinRoom,
+    leaveRoom,
     startGame,
     connected,
     sessionToken,
@@ -25,25 +26,28 @@ export function RoomPage() {
 
   const [copied, setCopied] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
+  const [joinFailed, setJoinFailed] = useState(false);
   const [mobileTab, setMobileTab] = useState('card'); // 'card' | 'players' | 'chat'
 
   useEffect(() => {
-    if (roomCode && connected) {
+    if (roomCode && connected && !joinFailed) {
       if (!roomState || roomState.roomCode !== roomCode) {
-        joinRoom(roomCode).catch(() => {});
+        joinRoom(roomCode).catch(() => {
+          setJoinFailed(true);
+        });
       }
     }
-  }, [roomCode, roomState?.roomCode, connected]);
+  }, [roomCode, roomState?.roomCode, connected, joinFailed]);
 
   useEffect(() => {
     if (!roomState && !roomCode) {
-      navigate('/');
+      navigate('/', { replace: true });
     }
   }, [roomState, roomCode, navigate]);
 
   const handleCopyLink = () => {
     sounds.playPop();
-    const url = window.location.href;
+    const url = `${window.location.origin}/room/${roomCode || roomState?.roomCode}`;
     navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -63,11 +67,30 @@ export function RoomPage() {
   if (!roomState) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4 text-white">
-        <div className="text-center space-y-3 bg-white rounded-3xl border-4 border-[#0b2c4d] shadow-[0_8px_0_#08233d] p-8 text-[#0b2c4d] max-w-sm w-full">
+        <div className="text-center space-y-3.5 bg-white rounded-3xl border-4 border-[#0b2c4d] shadow-[0_8px_0_#08233d] p-7 sm:p-8 text-[#0b2c4d] max-w-sm w-full animate-pop">
           <div className="text-5xl animate-bounce">🎯</div>
-          <h2 className="text-2xl font-black">Joining Room {roomCode}...</h2>
-          <p className="text-slate-500 font-bold text-xs">Getting your 1–25 card ready!</p>
-          {error && <p className="text-rose-500 font-black text-xs">{error}</p>}
+          <h2 className="text-2xl font-black">
+            {error ? 'Room Notice' : `Joining Room ${roomCode}...`}
+          </h2>
+          <p className="text-slate-500 font-bold text-xs">
+            {error ? 'Could not connect to this room.' : 'Getting your 1–25 card ready!'}
+          </p>
+          {error && (
+            <div className="bg-rose-50 text-rose-700 font-black text-xs p-2.5 rounded-xl border border-rose-200">
+              {error}
+            </div>
+          )}
+          <button
+            onClick={() => {
+              sounds.playPop();
+              leaveRoom();
+              navigate('/', { replace: true });
+            }}
+            className="w-full skribbl-btn-blue py-2.5 rounded-2xl text-sm flex items-center justify-center space-x-1.5 cursor-pointer mt-2"
+          >
+            <Home className="w-4 h-4" />
+            <span>Return to Home</span>
+          </button>
         </div>
       </div>
     );

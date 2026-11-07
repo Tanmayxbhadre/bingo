@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import confetti from 'canvas-confetti';
 import { Trophy, Sparkles, RotateCcw, Home, Eye } from 'lucide-react';
 import { useGame } from '../context/GameContext.jsx';
 import { sounds } from '../services/soundEffects.js';
 
 export function WinnerModal({ winner }) {
+  const navigate = useNavigate();
   const { roomState, playAgain, leaveRoom, sessionToken } = useGame();
   const [minimized, setMinimized] = useState(false);
 
@@ -128,8 +130,9 @@ export function WinnerModal({ winner }) {
               onClick={() => {
                 sounds.playPop();
                 leaveRoom();
+                navigate('/', { replace: true });
               }}
-              className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-xl text-xs border-2 border-slate-300 flex items-center justify-center space-x-1"
+              className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-xl text-xs border-2 border-slate-300 flex items-center justify-center space-x-1 cursor-pointer"
             >
               <Home className="w-3.5 h-3.5" />
               <span>Home</span>

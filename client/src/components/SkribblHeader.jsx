@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Clock, Copy, Check, Volume2, VolumeX, LogOut, Crown } from 'lucide-react';
 import { useGame } from '../context/GameContext.jsx';
 import { SkribblLogo } from './SkribblLogo.jsx';
@@ -6,6 +7,7 @@ import { sounds } from '../services/soundEffects.js';
 import { ROOM_STATUS } from '@shared/constants/gameConstants.js';
 
 export function SkribblHeader() {
+  const navigate = useNavigate();
   const {
     roomState,
     leaveRoom,
@@ -22,6 +24,12 @@ export function SkribblHeader() {
     sounds.playPop();
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleLeave = () => {
+    sounds.playPop();
+    leaveRoom();
+    navigate('/', { replace: true });
   };
 
   const isPlaying = roomState?.status === ROOM_STATUS.PLAYING;
@@ -57,8 +65,9 @@ export function SkribblHeader() {
               {isMuted ? <VolumeX className="w-4 h-4 text-rose-300" /> : <Volume2 className="w-4 h-4 text-emerald-300" />}
             </button>
             <button
-              onClick={leaveRoom}
+              onClick={handleLeave}
               className="p-1.5 bg-rose-500/80 rounded-xl"
+              title="Leave Room"
             >
               <LogOut className="w-4 h-4" />
             </button>
@@ -118,8 +127,9 @@ export function SkribblHeader() {
             {isMuted ? <VolumeX className="w-4 h-4 text-rose-300" /> : <Volume2 className="w-4 h-4 text-emerald-300" />}
           </button>
           <button
-            onClick={leaveRoom}
-            className="flex items-center space-x-1 bg-rose-600 hover:bg-rose-500 text-white px-3 py-1.5 rounded-xl font-bold text-xs border-2 border-rose-800 transition-all active:scale-95"
+            onClick={handleLeave}
+            className="flex items-center space-x-1 bg-rose-600 hover:bg-rose-500 text-white px-3 py-1.5 rounded-xl font-bold text-xs border-2 border-rose-800 transition-all active:scale-95 cursor-pointer shadow-sm"
+            title="Leave Room"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>Leave</span>
