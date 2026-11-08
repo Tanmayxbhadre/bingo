@@ -125,46 +125,51 @@ export function RoomPage() {
         {isLobby ? (
           /* ==================== SKRIBBL LOBBY VIEW ==================== */
           <div className="max-w-2xl mx-auto space-y-4 animate-pop my-auto pt-6">
-            <div className="bg-white rounded-3xl border-4 border-[#0b2c4d] shadow-[0_8px_0_#08233d] p-6 sm:p-8 text-center text-[#0b2c4d]">
-              <div className="text-xs font-black uppercase text-slate-400 tracking-wider">
-                skribbl.io Game Lobby
+            <div className="bg-gradient-to-b from-white via-white to-sky-50/50 rounded-[32px] border-4 border-[#0b2c4d] shadow-[0_10px_0_#072847,0_20px_35px_rgba(7,43,77,0.3)] p-6 sm:p-8 text-center text-[#0b2c4d]">
+              <div className="inline-block bg-sky-100 text-[#0284c7] font-black text-xs uppercase px-3 py-1 rounded-full border border-sky-300 mb-2">
+                🎮 BINGO.IO GAME LOBBY
               </div>
-              <h2 className="text-3xl font-black mt-1 mb-3">
+              <h2 className="text-3xl sm:text-4xl font-black mt-1 mb-4 text-[#072847]">
                 Waiting for Players
               </h2>
 
               {/* Big Room Code Box */}
-              <div className="inline-flex items-center space-x-3 bg-[#f0f4f8] border-3 border-[#0b2c4d] px-6 py-2.5 rounded-2xl mb-3 shadow-inner">
+              <div className="inline-flex items-center space-x-3 bg-white border-3 border-[#0b2c4d] px-6 py-2.5 rounded-2xl mb-4 shadow-[inset_0_2px_4px_rgba(0,0,0,0.06),0_3px_0_#072847]">
                 <span className="text-xs font-black uppercase text-slate-500">Room Code:</span>
-                <span className="font-mono text-3xl font-black text-[#0084ff] tracking-wider">
+                <span className="font-mono text-3xl font-black text-[#0284c7] tracking-wider">
                   {roomState.roomCode}
                 </span>
                 <button
                   onClick={handleCopyLink}
-                  className="bg-white hover:bg-slate-100 p-2 rounded-xl border-2 border-[#0b2c4d] transition-all active:scale-95"
+                  className="bg-yellow-400 hover:bg-yellow-300 p-2 rounded-xl border-2 border-[#0b2c4d] transition-all active:scale-95 shadow-sm cursor-pointer"
                   title="Copy Link"
                 >
-                  {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4 text-[#0b2c4d]" />}
+                  {copied ? <Check className="w-4 h-4 text-emerald-800" /> : <Copy className="w-4 h-4 text-[#072847]" />}
                 </button>
               </div>
 
               <div className="flex items-center justify-center space-x-3 text-xs font-bold text-slate-600">
                 <button
                   onClick={handleCopyLink}
-                  className="skribbl-btn-blue px-3 py-1.5 rounded-xl text-xs flex items-center space-x-1"
+                  className="skribbl-btn-blue px-4 py-2 rounded-xl text-xs flex items-center space-x-1.5 cursor-pointer"
                 >
-                  <Share2 className="w-3.5 h-3.5" />
-                  <span>{copied ? 'Copied!' : 'Copy Invite Link'}</span>
+                  <Share2 className="w-3.5 h-3.5 stroke-[2.5]" />
+                  <span>{copied ? 'Copied Link!' : 'Copy Invite Link'}</span>
                 </button>
-                <span>Turn Timer: <span className="text-[#0084ff] font-black">{roomState.turnDurationSec}s</span></span>
+                <span className="bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
+                  Turn Timer: <span className="text-[#0284c7] font-black">{roomState.turnDurationSec}s</span>
+                </span>
               </div>
             </div>
 
             {/* Players in Lobby Grid */}
-            <div className="bg-white rounded-3xl border-4 border-[#0b2c4d] shadow-[0_6px_0_#08233d] p-5">
-              <div className="flex items-center justify-between pb-2 border-b-2 border-slate-200 mb-3 px-1">
-                <span className="font-black text-sm text-[#0b2c4d] uppercase tracking-wide">
-                  Connected Players ({roomState.playerCount})
+            <div className="bg-gradient-to-b from-white via-white to-sky-50/50 rounded-[32px] border-4 border-[#0b2c4d] shadow-[0_10px_0_#072847,0_20px_35px_rgba(7,43,77,0.3)] p-5 sm:p-6">
+              <div className="flex items-center justify-between pb-3 border-b-2 border-slate-200 mb-4 px-1">
+                <span className="font-black text-sm text-[#072847] uppercase tracking-wide flex items-center space-x-1.5">
+                  <span>👥 Connected Players</span>
+                  <span className="bg-sky-100 text-[#0284c7] text-xs px-2 py-0.5 rounded-full border border-sky-300">
+                    {roomState.playerCount}
+                  </span>
                 </span>
                 <button
                   type="button"
@@ -172,7 +177,7 @@ export function RoomPage() {
                     sounds.playPop();
                     setShowCustomizeModal(true);
                   }}
-                  className="bg-yellow-400 hover:bg-yellow-300 text-yellow-950 font-black text-xs px-3 py-1.5 rounded-xl border-2 border-[#0b2c4d] shadow-[0_2px_0_#08233d] flex items-center space-x-1 transition-all active:scale-95 cursor-pointer"
+                  className="skribbl-btn-yellow text-xs px-3.5 py-1.5 rounded-xl flex items-center space-x-1 cursor-pointer"
                   title="Customize your character & name"
                 >
                   <Palette className="w-3.5 h-3.5" />

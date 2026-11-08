@@ -37,27 +37,27 @@ export function CustomizeProfileModal({ isOpen, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-pop select-none">
-      <div className="relative bg-white border-4 border-[#0b2c4d] p-5 sm:p-6 rounded-3xl max-w-sm w-full text-center text-[#0b2c4d] shadow-[0_10px_0_#08233d] space-y-3">
+      <div className="relative bg-gradient-to-b from-white via-white to-sky-50/50 border-4 border-[#0b2c4d] p-6 rounded-[32px] max-w-sm w-full text-center text-[#0b2c4d] shadow-[0_12px_0_#072847,0_25px_40px_rgba(0,0,0,0.35)] space-y-3.5">
         {/* Close X Button */}
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-3.5 right-3.5 p-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-[#0b2c4d] transition-all cursor-pointer"
+          className="absolute top-4 right-4 p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-[#0b2c4d] transition-all cursor-pointer"
         >
-          <X className="w-5 h-5" />
+          <X className="w-5 h-5 stroke-[2.5]" />
         </button>
 
         {/* Modal Header */}
         <div className="text-center pb-1">
-          <div className="inline-flex items-center space-x-1 text-xs font-black text-yellow-600 uppercase tracking-wider mb-0.5">
-            <Sparkles className="w-3.5 h-3.5 text-yellow-500" />
+          <div className="inline-flex items-center space-x-1.5 text-xs font-black text-amber-700 bg-amber-100 px-3 py-0.5 rounded-full border border-amber-300 uppercase tracking-wider mb-1">
+            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
             <span>Character Studio</span>
           </div>
-          <h2 className="text-2xl font-black text-[#0b2c4d]">
-            Customize Character
+          <h2 className="text-2xl font-black text-[#072847]">
+            Customize Profile
           </h2>
-          <p className="text-slate-500 font-bold text-xs">
-            Pick your favorite avatar, color & name!
+          <p className="text-slate-500 font-bold text-xs mt-0.5">
+            Pick your favorite character, color & nickname!
           </p>
         </div>
 
@@ -73,15 +73,15 @@ export function CustomizeProfileModal({ isOpen, onClose }) {
         {/* Name Input */}
         <div>
           <label className="block text-[11px] font-black uppercase text-slate-500 mb-1 text-center">
-            Your Display Name:
+            Your Nickname:
           </label>
           <input
             type="text"
             value={inputName}
             onChange={(e) => setInputName(e.target.value)}
             maxLength={16}
-            placeholder="Enter your name"
-            className="w-full bg-[#f4f7fa] border-4 border-[#0b2c4d] text-[#0b2c4d] placeholder-slate-400 font-black text-center text-lg rounded-2xl py-2 focus:outline-none focus:ring-4 focus:ring-[#0084ff]/30 transition-all"
+            placeholder="Enter nickname"
+            className="w-full bg-white border-3 border-[#0b2c4d] text-[#0b2c4d] placeholder-slate-400 font-black text-center text-lg rounded-2xl py-2.5 shadow-inner focus:outline-none focus:ring-4 focus:ring-yellow-400/50 focus:border-[#0084ff] transition-all"
           />
         </div>
 
@@ -90,7 +90,7 @@ export function CustomizeProfileModal({ isOpen, onClose }) {
           <button
             type="button"
             onClick={handleSave}
-            className="w-full skribbl-btn-green py-3 rounded-2xl text-lg font-black flex items-center justify-center space-x-2 tracking-wide cursor-pointer shadow-md"
+            className="w-full skribbl-btn-green py-3.5 rounded-2xl text-lg font-black flex items-center justify-center space-x-2 tracking-wide cursor-pointer shadow-lg"
           >
             <Check className="w-5 h-5 stroke-[3]" />
             <span>Save & Ready!</span>

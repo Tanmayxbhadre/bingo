@@ -153,7 +153,7 @@ export function HomePage() {
         {/* skribbl.io Logo */}
         <div className="text-center mb-3">
           <SkribblLogo size="large" />
-          <div className="text-white font-extrabold text-xs sm:text-sm mt-1 flex items-center justify-center space-x-1.5 drop-shadow-sm">
+          <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-300 text-yellow-950 font-black text-xs sm:text-sm px-4 py-1 rounded-full border-2 border-[#0b2c4d] shadow-[0_3px_0_#072847] mt-2">
             <span>🎉</span>
             <span>Live Multiplayer 5×5 Bingo!</span>
             <span>🎯</span>
@@ -171,7 +171,7 @@ export function HomePage() {
         )}
 
         {/* Central skribbl.io Box */}
-        <div className="w-full bg-white rounded-3xl border-4 border-[#0b2c4d] shadow-[0_8px_0_#08233d] p-4 sm:p-5 space-y-3">
+        <div className="w-full bg-gradient-to-b from-white via-white to-sky-50/50 rounded-[32px] border-4 border-[#0b2c4d] shadow-[0_12px_0_#072847,0_24px_40px_rgba(7,43,77,0.35)] p-5 sm:p-6 space-y-3.5">
           {/* Avatar Customizer */}
           <SkribblAvatarCustomizer
             avatarIndex={currentAvatarIdx}
@@ -189,8 +189,8 @@ export function HomePage() {
               onChange={handleNameChange}
               onBlur={handleNameBlur}
               maxLength={16}
-              placeholder="Enter your name"
-              className="w-full bg-[#f4f7fa] border-4 border-[#0b2c4d] text-[#0b2c4d] placeholder-slate-400 font-black text-center text-lg rounded-2xl py-2.5 focus:outline-none focus:ring-4 focus:ring-[#0084ff]/30 transition-all"
+              placeholder="Enter your nickname"
+              className="w-full bg-white border-4 border-[#0b2c4d] text-[#0b2c4d] placeholder-slate-400 font-black text-center text-xl rounded-2xl py-3 shadow-[inset_0_3px_6px_rgba(0,0,0,0.06),0_4px_0_rgba(11,44,77,0.12)] focus:outline-none focus:ring-4 focus:ring-yellow-400/60 focus:border-[#0084ff] transition-all"
             />
           </div>
 
@@ -198,22 +198,22 @@ export function HomePage() {
           <button
             onClick={handleQuickPlay}
             disabled={isLoading}
-            className="w-full skribbl-btn-green py-3.5 rounded-2xl text-xl font-black flex items-center justify-center space-x-2 tracking-wide cursor-pointer"
+            className="w-full skribbl-btn-green py-4 rounded-2xl text-2xl font-black flex items-center justify-center space-x-2.5 tracking-wider cursor-pointer"
           >
-            <Play className="w-6 h-6 fill-white" />
+            <Play className="w-7 h-7 fill-white" />
             <span>{isLoading ? 'Entering...' : 'Play!'}</span>
           </button>
 
           {/* Action Row: Create Private Room & Public Games */}
-          <div className="grid grid-cols-2 gap-2.5 pt-0.5">
+          <div className="grid grid-cols-2 gap-3 pt-1">
             <button
               onClick={() => {
                 sounds.playPop();
                 setShowCreateModal(true);
               }}
-              className="skribbl-btn-blue py-2.5 rounded-2xl text-xs sm:text-sm font-black flex items-center justify-center space-x-1 cursor-pointer"
+              className="skribbl-btn-blue py-3 rounded-2xl text-sm font-black flex items-center justify-center space-x-1.5 cursor-pointer"
             >
-              <PlusCircle className="w-4 h-4" />
+              <PlusCircle className="w-4 h-4 stroke-[2.5]" />
               <span>Create Room</span>
             </button>
 
@@ -223,41 +223,41 @@ export function HomePage() {
                 fetchPublicRooms();
                 setShowPublicModal(true);
               }}
-              className="skribbl-btn-orange py-2.5 rounded-2xl text-xs sm:text-sm font-black flex items-center justify-center space-x-1 cursor-pointer"
+              className="skribbl-btn-orange py-3 rounded-2xl text-sm font-black flex items-center justify-center space-x-1.5 cursor-pointer"
             >
-              <Globe className="w-4 h-4" />
+              <Globe className="w-4 h-4 stroke-[2.5]" />
               <span>Rooms ({publicRooms.length})</span>
             </button>
           </div>
 
           {/* Join by Room Code Box */}
-          <div className="pt-2 border-t-2 border-slate-200">
-            <div className="flex items-center space-x-2">
+          <div className="pt-3 border-t-3 border-slate-200/80">
+            <div className="flex items-center space-x-2.5">
               <input
                 type="text"
                 value={joinCode}
                 onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
                 placeholder="ENTER ROOM CODE"
                 maxLength={6}
-                className="flex-1 bg-[#f4f7fa] border-3 border-[#0b2c4d] text-center font-mono font-black text-[#0b2c4d] placeholder-slate-400 rounded-xl py-2 uppercase text-sm focus:outline-none focus:ring-2 focus:ring-[#0084ff]"
+                className="flex-1 bg-white border-3 border-[#0b2c4d] text-center font-mono font-black text-[#0b2c4d] placeholder-slate-400 rounded-xl py-2.5 uppercase text-base focus:outline-none focus:ring-3 focus:ring-[#0084ff] shadow-inner"
               />
               <button
                 onClick={() => handleJoinSubmit()}
                 disabled={joinCode.trim().length < 4 || isLoading}
-                className="skribbl-btn-green px-4 py-2 rounded-xl text-sm font-black flex items-center space-x-1 disabled:opacity-50 cursor-pointer"
+                className="skribbl-btn-green px-5 py-2.5 rounded-xl text-base font-black flex items-center space-x-1 disabled:opacity-50 cursor-pointer"
               >
                 <span>Join</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 stroke-[3]" />
               </button>
             </div>
           </div>
         </div>
 
         {/* Compact How To Play Pill */}
-        <div className="mt-3 bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-2xl px-4 py-2 text-white text-[11px] text-center shadow-md">
-          <span className="font-black text-yellow-300 mr-1.5">💡 HOW TO PLAY:</span>
-          <span className="text-slate-200">
-            Take turns calling 1–25 • Tap opponent's number to stamp <span className="font-black text-rose-300">✕</span> • Complete 5 lines to WIN! 🏆
+        <div className="mt-4 bg-white/95 backdrop-blur-md border-3 border-[#0b2c4d] shadow-[0_6px_0_#072847] rounded-2xl px-4 py-2.5 text-[#0b2c4d] text-xs font-bold text-center">
+          <span className="font-black text-amber-600 mr-1.5">💡 HOW TO PLAY:</span>
+          <span>
+            Take turns calling 1–25 • Tap opponent's number to stamp <span className="font-black text-rose-500">✕</span> • Complete 5 lines to WIN! 🏆
           </span>
         </div>
 

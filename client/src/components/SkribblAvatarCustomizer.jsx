@@ -34,20 +34,23 @@ export function SkribblAvatarCustomizer({
         <button
           type="button"
           onClick={handlePrev}
-          className="w-11 h-11 rounded-2xl bg-yellow-400 hover:bg-yellow-300 text-[#0b2c4d] border-4 border-[#0b2c4d] shadow-[0_4px_0_#08233d] flex items-center justify-center font-black transition-all active:translate-y-1 active:shadow-none cursor-pointer"
+          className="w-12 h-12 rounded-2xl bg-gradient-to-b from-yellow-300 via-yellow-400 to-amber-500 hover:from-yellow-200 hover:to-yellow-400 text-[#072847] border-4 border-[#0b2c4d] shadow-[0_5px_0_#072847] flex items-center justify-center font-black transition-all active:translate-y-1 active:shadow-[0_1px_0_#072847] cursor-pointer hover:scale-105"
           title="Previous Character"
         >
-          <ChevronLeft className="w-6 h-6 stroke-[3.5]" />
+          <ChevronLeft className="w-7 h-7 stroke-[3.5]" />
         </button>
 
-        {/* Character Box */}
+        {/* Character Stage Box */}
         <div
-          className="relative w-28 h-28 rounded-3xl bg-slate-100/90 border-4 border-[#0b2c4d] shadow-[0_6px_0_#08233d] flex flex-col items-center justify-center transition-all duration-200 cursor-pointer overflow-visible"
+          className="relative w-32 h-32 rounded-3xl bg-gradient-to-b from-white via-white to-sky-50 border-4 border-[#0b2c4d] shadow-[0_8px_0_#072847] flex flex-col items-center justify-center transition-all duration-200 cursor-pointer overflow-visible hover:scale-105"
           onClick={() => setShowGrid(!showGrid)}
           title="Click to browse all characters!"
         >
-          <div className="transform hover:scale-110 transition-transform">
-            <CharacterAvatar id={currentAvatar.id} color={avatarColor} size={92} />
+          {/* Subtle Stage Inner Glow */}
+          <div className="absolute inset-1.5 rounded-[22px] bg-[radial-gradient(circle_at_center,rgba(255,255,255,1)_0%,rgba(240,249,255,0.7)_100%)] pointer-events-none" />
+
+          <div className="relative z-1 transform hover:scale-110 transition-transform">
+            <CharacterAvatar id={currentAvatar.id} color={avatarColor} size={98} />
           </div>
 
           {/* Randomize Dice Button */}
@@ -57,10 +60,10 @@ export function SkribblAvatarCustomizer({
               e.stopPropagation();
               onRandomize();
             }}
-            className="absolute -top-2.5 -right-2.5 w-8 h-8 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-yellow-950 border-3 border-[#0b2c4d] shadow-[0_2px_0_#08233d] flex items-center justify-center transition-transform active:scale-90 cursor-pointer z-10"
+            className="absolute -top-3 -right-3 w-9 h-9 rounded-xl bg-gradient-to-b from-amber-300 to-yellow-400 hover:from-amber-200 hover:to-yellow-300 text-yellow-950 border-3 border-[#0b2c4d] shadow-[0_3px_0_#072847] flex items-center justify-center transition-all active:scale-90 hover:rotate-12 cursor-pointer z-10"
             title="Randomize Character & Color"
           >
-            <Dices className="w-4 h-4 stroke-[2.5]" />
+            <Dices className="w-5 h-5 stroke-[2.5]" />
           </button>
         </div>
 
@@ -68,16 +71,16 @@ export function SkribblAvatarCustomizer({
         <button
           type="button"
           onClick={handleNext}
-          className="w-11 h-11 rounded-2xl bg-yellow-400 hover:bg-yellow-300 text-[#0b2c4d] border-4 border-[#0b2c4d] shadow-[0_4px_0_#08233d] flex items-center justify-center font-black transition-all active:translate-y-1 active:shadow-none cursor-pointer"
+          className="w-12 h-12 rounded-2xl bg-gradient-to-b from-yellow-300 via-yellow-400 to-amber-500 hover:from-yellow-200 hover:to-yellow-400 text-[#072847] border-4 border-[#0b2c4d] shadow-[0_5px_0_#072847] flex items-center justify-center font-black transition-all active:translate-y-1 active:shadow-[0_1px_0_#072847] cursor-pointer hover:scale-105"
           title="Next Character"
         >
-          <ChevronRight className="w-6 h-6 stroke-[3.5]" />
+          <ChevronRight className="w-7 h-7 stroke-[3.5]" />
         </button>
       </div>
 
       {/* Character Label & Quick Grid Toggle */}
-      <div className="flex items-center space-x-2 mt-2">
-        <span className="text-xs font-black text-[#0b2c4d] bg-slate-100 px-3 py-0.5 rounded-full border border-slate-300">
+      <div className="flex items-center space-x-2 mt-2.5">
+        <span className="text-xs font-black text-amber-950 bg-gradient-to-r from-amber-200 to-yellow-300 px-3.5 py-1 rounded-full border-2 border-amber-400 shadow-sm">
           {currentAvatar.label}
         </span>
         <button
@@ -86,7 +89,7 @@ export function SkribblAvatarCustomizer({
             sounds.playPop();
             setShowGrid(!showGrid);
           }}
-          className="text-[11px] font-black text-[#0084ff] hover:underline flex items-center space-x-0.5 cursor-pointer"
+          className="text-xs font-black text-[#0284c7] bg-white hover:bg-sky-50 border-2 border-sky-300 px-2.5 py-0.5 rounded-full shadow-sm hover:border-[#0284c7] transition-all flex items-center space-x-1 cursor-pointer"
         >
           <SmilePlus className="w-3.5 h-3.5" />
           <span>{showGrid ? 'Close' : 'All (16)'}</span>
@@ -95,7 +98,7 @@ export function SkribblAvatarCustomizer({
 
       {/* All 16 Custom Characters Grid Popup */}
       {showGrid && (
-        <div className="mt-2.5 bg-[#f0f4f8] border-3 border-[#0b2c4d] rounded-2xl p-2.5 grid grid-cols-4 gap-2 animate-pop w-full shadow-lg">
+        <div className="mt-3 bg-white border-4 border-[#0b2c4d] rounded-2xl p-2.5 grid grid-cols-4 gap-2 animate-pop w-full shadow-[0_8px_0_#072847]">
           {AVATARS.map((av, idx) => {
             const isSelected = avatarIndex === idx;
             return (
@@ -107,15 +110,15 @@ export function SkribblAvatarCustomizer({
                   onChangeAvatar(idx);
                   setShowGrid(false);
                 }}
-                className={`p-1 rounded-xl flex flex-col items-center justify-center transition-all cursor-pointer ${
+                className={`p-1.5 rounded-xl flex flex-col items-center justify-center transition-all cursor-pointer ${
                   isSelected
-                    ? 'bg-yellow-300 border-3 border-[#0b2c4d] scale-110 shadow-sm'
-                    : 'bg-white hover:bg-slate-100 border-2 border-slate-200 hover:border-[#0b2c4d]'
+                    ? 'bg-gradient-to-b from-yellow-200 to-amber-300 border-3 border-[#0b2c4d] scale-110 shadow-md -translate-y-0.5'
+                    : 'bg-slate-50 hover:bg-white border-2 border-slate-200 hover:border-[#0b2c4d]'
                 }`}
                 title={av.label}
               >
-                <CharacterAvatar id={av.id} color={avatarColor} size={40} />
-                <span className="text-[9px] font-black text-[#0b2c4d] truncate max-w-[54px] mt-0.5 leading-none">
+                <CharacterAvatar id={av.id} color={avatarColor} size={42} />
+                <span className="text-[9px] font-black text-[#0b2c4d] truncate max-w-[54px] mt-1 leading-none">
                   {av.label.split(' ')[0]}
                 </span>
               </button>
@@ -125,7 +128,7 @@ export function SkribblAvatarCustomizer({
       )}
 
       {/* Clean 5x2 Symmetrical Color Swatch Grid */}
-      <div className="grid grid-cols-5 gap-2.5 mt-3 max-w-[200px] mx-auto">
+      <div className="grid grid-cols-5 gap-2.5 mt-3.5 max-w-[210px] mx-auto">
         {SKRIBBL_COLORS.map((col) => {
           const isSelected = avatarColor === col;
           return (
@@ -136,13 +139,16 @@ export function SkribblAvatarCustomizer({
                 sounds.playPop();
                 onChangeColor(col);
               }}
-              className={`w-7 h-7 rounded-full border-3 border-[#0b2c4d] transition-all transform cursor-pointer ${
+              className={`w-7 h-7 rounded-full border-3 border-[#0b2c4d] transition-all transform cursor-pointer shadow-[0_3px_0_rgba(7,40,71,0.25)] relative ${
                 isSelected
-                  ? 'scale-120 ring-3 ring-white shadow-md -translate-y-0.5'
-                  : 'hover:scale-110'
+                  ? 'scale-125 ring-3 ring-white shadow-[0_4px_8px_rgba(0,0,0,0.35)] -translate-y-1'
+                  : 'hover:scale-115'
               }`}
               style={{ backgroundColor: col }}
-            />
+            >
+              {/* Inner 3D gloss reflection dot */}
+              <div className="absolute top-1 left-1.5 w-1.5 h-1 bg-white/60 rounded-full" />
+            </button>
           );
         })}
       </div>
