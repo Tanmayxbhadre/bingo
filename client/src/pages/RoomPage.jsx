@@ -288,30 +288,30 @@ export function RoomPage() {
               </button>
             </div>
 
-            <div className="flex flex-col lg:flex-row gap-4 items-start justify-center">
+            <div className="flex flex-col lg:flex-row gap-4 items-start justify-center relative z-10">
               {/* Left Column: skribbl Player Table */}
-              <div className={`w-full lg:w-64 flex-shrink-0 ${mobileTab === 'players' ? 'block' : 'hidden lg:block'}`}>
+              <div className={`w-full lg:w-72 flex-shrink-0 ${mobileTab === 'players' ? 'block' : 'hidden lg:block'}`}>
                 <SkribblPlayerList />
               </div>
 
               {/* Middle Column: Central Game Board & Action Banner */}
-              <div className={`flex-1 w-full max-w-lg flex flex-col items-center space-y-2.5 ${mobileTab === 'card' ? 'flex' : 'hidden lg:flex'}`}>
+              <div className={`flex-1 w-full max-w-lg flex flex-col items-center space-y-3 ${mobileTab === 'card' ? 'flex' : 'hidden lg:flex'}`}>
                 {/* Turn Callout Banner */}
                 <div className="w-full text-center">
                   {isMyTurn ? (
-                    <div className="bg-emerald-400 text-emerald-950 border-3 border-[#0b2c4d] shadow-[0_4px_0_#08233d] py-2 px-3 rounded-2xl font-black text-xs sm:text-sm flex items-center justify-center space-x-1.5">
-                      <span>✏️</span>
-                      <span>Pick any number on your card to call it!</span>
+                    <div className="bg-gradient-to-r from-emerald-500 via-green-400 to-emerald-500 text-white border-3 border-[#072847] shadow-[0_4px_0_#072847,0_8px_16px_rgba(34,197,94,0.3)] py-2.5 px-4 rounded-2xl font-black text-xs sm:text-sm flex items-center justify-center space-x-2 animate-pulse">
+                      <span>⚡</span>
+                      <span>YOUR TURN: Click any number on your card to call it!</span>
                     </div>
                   ) : currentCalled ? (
-                    <div className="bg-amber-300 text-amber-950 border-3 border-[#0b2c4d] shadow-[0_4px_0_#08233d] py-2 px-3 rounded-2xl font-black text-xs sm:text-sm flex items-center justify-center space-x-1.5 animate-pulse">
+                    <div className="bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 text-yellow-950 border-3 border-[#072847] shadow-[0_4px_0_#072847] py-2.5 px-4 rounded-2xl font-black text-xs sm:text-sm flex items-center justify-center space-x-2 animate-pulse">
                       <span>👉</span>
-                      <span>{turnPlayerName} called [{currentCalled}]! Tap {currentCalled} to stamp ✕!</span>
+                      <span>{turnPlayerName} called [{currentCalled}]! Tap it on your card to stamp ✕!</span>
                     </div>
                   ) : (
-                    <div className="bg-white text-[#0b2c4d] border-3 border-[#0b2c4d] shadow-[0_4px_0_#08233d] py-2 px-3 rounded-2xl font-black text-xs sm:text-sm flex items-center justify-center space-x-1.5">
+                    <div className="bg-white/95 text-[#072847] border-3 border-[#072847] shadow-[0_4px_0_#072847] py-2.5 px-4 rounded-2xl font-black text-xs sm:text-sm flex items-center justify-center space-x-2">
                       <span>⏳</span>
-                      <span>Waiting for {turnPlayerName} to choose...</span>
+                      <span>Waiting for {turnPlayerName} to choose a number...</span>
                     </div>
                   )}
                 </div>

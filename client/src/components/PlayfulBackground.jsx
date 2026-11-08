@@ -62,13 +62,13 @@ export function PlayfulBackground() {
       <div className="absolute bottom-[-10%] left-[25%] w-[550px] h-[550px] bg-cyan-300/30 rounded-full blur-[100px] animate-orb-3" />
       <div className="absolute top-[45%] left-[-8%] w-[450px] h-[450px] bg-amber-400/20 rounded-full blur-[90px] animate-orb-1" />
 
-      {/* 3. Floating 3D Bingo Balls drifting at edges */}
-      <BingoBall number={7} color="#fbbf24" top="9%" left="6%" size={62} animClass="animate-ball-1" delay="0s" opacity={0.9} />
-      <BingoBall number={21} color="#f97316" top="35%" right="6%" size={54} animClass="animate-ball-2" delay="1.5s" opacity={0.85} />
-      <BingoBall number={3} color="#38bdf8" top="65%" left="5%" size={58} animClass="animate-ball-3" delay="2.2s" opacity={0.85} />
-      <BingoBall number={15} color="#22c55e" top="82%" right="7%" size={52} animClass="animate-ball-1" delay="3s" opacity={0.9} />
-      <BingoBall number={9} color="#f59e0b" top="16%" right="18%" size={46} animClass="animate-ball-2" delay="0.5s" opacity={0.8} />
-      <BingoBall number={18} color="#a855f7" bottom="12%" left="18%" size={50} animClass="animate-ball-3" delay="2s" opacity={0.8} />
+      {/* 3. Floating 3D Bingo Balls drifting safely at screen edges */}
+      <BingoBall number={7} color="#fbbf24" top="8%" left="2%" size={58} animClass="animate-ball-1" delay="0s" opacity={0.85} />
+      <BingoBall number={21} color="#f97316" top="38%" right="2%" size={52} animClass="animate-ball-2" delay="1.5s" opacity={0.8} />
+      <BingoBall number={3} color="#38bdf8" top="68%" left="2%" size={54} animClass="animate-ball-3" delay="2.2s" opacity={0.8} />
+      <BingoBall number={15} color="#22c55e" top="84%" right="2%" size={50} animClass="animate-ball-1" delay="3s" opacity={0.85} />
+      <BingoBall number={9} color="#f59e0b" top="14%" right="1.5%" size={44} animClass="animate-ball-2" delay="0.5s" opacity={0.75} />
+      <BingoBall number={18} color="#a855f7" bottom="8%" left="1.5%" size={48} animClass="animate-ball-3" delay="2s" opacity={0.75} />
 
       {/* 4. Playful Cartoon Doodles */}
       {DOODLES.map((d, idx) => (
