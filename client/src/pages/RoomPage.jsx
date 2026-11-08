@@ -112,9 +112,10 @@ export function RoomPage() {
   }
 
   const isLobby = roomState.status === ROOM_STATUS.LOBBY;
-  const isMyTurn = roomState.isMyTurn;
+  const isGameOver = roomState.status === ROOM_STATUS.GAME_OVER || Boolean(roomState.winner);
+  const isMyTurn = !isGameOver && roomState.isMyTurn;
   const turnPlayerName = roomState.turnPlayerName || 'Opponent';
-  const currentCalled = roomState.currentCalledNumber;
+  const currentCalled = !isGameOver ? roomState.currentCalledNumber : null;
 
   return (
     <div className="min-h-screen flex flex-col justify-between">
@@ -298,7 +299,17 @@ export function RoomPage() {
               <div className={`flex-1 w-full max-w-lg flex flex-col items-center space-y-3 ${mobileTab === 'card' ? 'flex' : 'hidden lg:flex'}`}>
                 {/* Turn Callout Banner */}
                 <div className="w-full text-center">
-                  {isMyTurn ? (
+                  {isGameOver ? (
+                    <div className="bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 text-yellow-950 border-3 border-[#072847] shadow-[0_4px_0_#072847] py-2.5 px-4 rounded-2xl font-black text-xs sm:text-sm flex items-center justify-center space-x-2">
+                      <span>🏆</span>
+                      <span>
+                        {roomState.winner
+                          ? `MATCH COMPLETED: ${roomState.winner.name} completed 5 lines and won!`
+                          : 'MATCH FINISHED!'}
+                      </span>
+                      <span>🎉</span>
+                    </div>
+                  ) : isMyTurn ? (
                     <div className="bg-gradient-to-r from-emerald-500 via-green-400 to-emerald-500 text-white border-3 border-[#072847] shadow-[0_4px_0_#072847,0_8px_16px_rgba(34,197,94,0.3)] py-2.5 px-4 rounded-2xl font-black text-xs sm:text-sm flex items-center justify-center space-x-2 animate-pulse">
                       <span>⚡</span>
                       <span>YOUR TURN: Click any number on your card to call it!</span>

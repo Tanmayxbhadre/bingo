@@ -12,12 +12,13 @@ export function SkribblBingoCard({
   completedCount = 0,
   completedLines = [],
 }) {
-  const { callNumber, markNumber } = useGame();
+  const { roomState, callNumber, markNumber } = useGame();
   const calledSet = new Set(calledNumbers);
   const winningSet = new Set(winningCells);
+  const isGameOver = roomState?.status === 'game_over' || Boolean(roomState?.winner);
 
   const handleCellClick = (cell) => {
-    if (cell.marked) return;
+    if (isGameOver || cell.marked) return;
 
     // 1. If this number has already been called by anyone, clicking it MARKS it!
     if (calledSet.has(cell.number)) {
@@ -50,13 +51,13 @@ export function SkribblBingoCard({
     { letter: 'O', color: '#ff7f50', shadow: '#b34720' },
   ];
 
-  const hasCurrentCalledToMark = currentCalledNumber && !card.find((c) => c.number === currentCalledNumber)?.marked;
+  const hasCurrentCalledToMark = !isGameOver && currentCalledNumber && !card.find((c) => c.number === currentCalledNumber)?.marked;
 
   return (
     <div className="flex flex-col items-center w-full max-w-lg mx-auto select-none">
       {/* 5x5 Drawing Canvas Card */}
       <div className="relative w-full bg-gradient-to-b from-white via-white to-sky-50/50 rounded-3xl sm:rounded-[32px] border-4 border-[#0b2c4d] shadow-[0_8px_0_#072847,0_16px_30px_rgba(7,43,77,0.25)] p-2.5 sm:p-4">
-        {/* Clean, Subtle Strikethrough Guide Lines */}
+        {/* Bold, Clean Red Strikethrough Guide Lines */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none z-10 p-2.5 sm:p-4">
           {completedLines.map((lineId) => {
             if (lineId.startsWith('row-')) {
@@ -69,10 +70,10 @@ export function SkribblBingoCard({
                   y1={y}
                   x2="95%"
                   y2={y}
-                  stroke="#f59e0b"
-                  strokeWidth="4"
+                  stroke="#dc2626"
+                  strokeWidth="5"
                   strokeLinecap="round"
-                  strokeOpacity="0.55"
+                  strokeOpacity="0.85"
                 />
               );
             }
@@ -86,10 +87,10 @@ export function SkribblBingoCard({
                   y1="5%"
                   x2={x}
                   y2="95%"
-                  stroke="#f59e0b"
-                  strokeWidth="4"
+                  stroke="#dc2626"
+                  strokeWidth="5"
                   strokeLinecap="round"
-                  strokeOpacity="0.55"
+                  strokeOpacity="0.85"
                 />
               );
             }
@@ -101,10 +102,10 @@ export function SkribblBingoCard({
                   y1="7%"
                   x2="93%"
                   y2="93%"
-                  stroke="#f59e0b"
-                  strokeWidth="4"
+                  stroke="#dc2626"
+                  strokeWidth="5"
                   strokeLinecap="round"
-                  strokeOpacity="0.55"
+                  strokeOpacity="0.85"
                 />
               );
             }
@@ -116,10 +117,10 @@ export function SkribblBingoCard({
                   y1="7%"
                   x2="7%"
                   y2="93%"
-                  stroke="#f59e0b"
-                  strokeWidth="4"
+                  stroke="#dc2626"
+                  strokeWidth="5"
                   strokeLinecap="round"
-                  strokeOpacity="0.55"
+                  strokeOpacity="0.85"
                 />
               );
             }
@@ -131,9 +132,10 @@ export function SkribblBingoCard({
           {card.map((cell) => {
             const isMarked = cell.marked;
             const isWinningCell = winningSet.has(cell.index);
-            const isCalledToMark = !isMarked && calledSet.has(cell.number);
-            const canCallThis = isMyTurn && !isMarked && !calledSet.has(cell.number);
-            const isClickable = !isMarked && (isCalledToMark || canCallThis);
+            const isLatestCalled = !isGameOver && !isMarked && cell.number === currentCalledNumber;
+            const isMissedCalled = !isGameOver && !isMarked && !isLatestCalled && calledSet.has(cell.number);
+            const canCallThis = !isGameOver && isMyTurn && !isMarked && !calledSet.has(cell.number);
+            const isClickable = !isGameOver && !isMarked && (isLatestCalled || isMissedCalled || canCallThis);
 
             let cellClass = 'bg-white text-[#072847] border-3 border-[#0b2c4d] shadow-[0_2.5px_0_#072847]';
 
@@ -141,11 +143,14 @@ export function SkribblBingoCard({
               // Glowing celebratory golden winning cell (clean & distinct)
               cellClass = 'bg-gradient-to-b from-[#fef08a] via-[#fde047] to-[#eab308] text-amber-950 font-black border-3 sm:border-4 border-[#854d0e] shadow-[0_3px_0_#713f12] ring-2 ring-yellow-300 scale-[1.02] z-2';
             } else if (isMarked) {
-              // Marked cell (soft, clean, doesn't clutter)
-              cellClass = 'bg-slate-100/90 text-slate-400 border-2 border-slate-300 shadow-[0_2px_0_#cbd5e1]';
-            } else if (isCalledToMark) {
-              // Number was called! Vibrant alert to click and mark
+              // Marked cell (clear readable number with stamp)
+              cellClass = 'bg-slate-100 text-slate-700 border-2 border-slate-300 shadow-[0_2px_0_#cbd5e1]';
+            } else if (isLatestCalled) {
+              // Number was just called! Vibrant alert to click and mark
               cellClass = 'bg-gradient-to-b from-amber-100 to-rose-100 text-[#072847] font-black border-3 sm:border-4 border-rose-500 shadow-[0_4px_0_#9f1239] ring-3 ring-rose-400/70 animate-bounce cursor-pointer scale-105 z-10';
+            } else if (isMissedCalled) {
+              // Previously called number (quiet, clickable to mark)
+              cellClass = 'bg-amber-50 text-amber-950 font-black border-2 border-amber-300 shadow-[0_2px_0_#d97706] hover:bg-amber-100 cursor-pointer';
             } else if (canCallThis) {
               // It's your turn to call
               cellClass = 'bg-white hover:bg-emerald-50 text-[#072847] font-black border-3 border-[#0b2c4d] hover:border-emerald-600 shadow-[0_3px_0_#072847] hover:shadow-[0_3px_0_#14532d] cursor-pointer hover:-translate-y-0.5 transition-all';
@@ -159,15 +164,15 @@ export function SkribblBingoCard({
                 disabled={!isClickable}
                 className={`relative aspect-square rounded-xl sm:rounded-2xl flex flex-col items-center justify-center select-none transition-all duration-150 active:translate-y-0.5 ${cellClass}`}
               >
-                {/* Number */}
-                <span className={`text-xl sm:text-3xl md:text-4xl font-black ${isMarked && !isWinningCell ? 'opacity-30' : ''}`}>
+                {/* Number (clearly visible) */}
+                <span className={`text-xl sm:text-3xl md:text-4xl font-black ${isMarked && !isWinningCell ? 'text-slate-600' : ''}`}>
                   {cell.number}
                 </span>
 
                 {/* Clean, Non-messy Stamp */}
                 {isMarked && !isWinningCell && (
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <span className="text-2xl sm:text-3xl md:text-4xl font-black text-[#ef4444]/80 select-none transform -rotate-12">
+                    <span className="text-2xl sm:text-3xl md:text-4xl font-black text-[#dc2626]/85 select-none transform -rotate-12">
                       ✕
                     </span>
                   </div>
@@ -180,10 +185,17 @@ export function SkribblBingoCard({
                   </span>
                 )}
 
-                {/* Pulsing "TAP!" badge when called */}
-                {isCalledToMark && (
+                {/* Pulsing "TAP!" badge for latest called number */}
+                {isLatestCalled && (
                   <span className="absolute -top-1.5 -right-1 bg-rose-500 text-white font-black text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.2 sm:py-0.5 rounded-full uppercase tracking-tight shadow-md animate-bounce">
                     Tap!
+                  </span>
+                )}
+
+                {/* Quiet tag for missed earlier numbers */}
+                {isMissedCalled && (
+                  <span className="absolute -top-1 -right-0.5 bg-amber-400 text-amber-950 font-black text-[8px] sm:text-[9px] px-1 rounded uppercase tracking-tighter">
+                    Mark
                   </span>
                 )}
               </button>
@@ -193,7 +205,7 @@ export function SkribblBingoCard({
       </div>
 
       {/* Opponent Calling Helper Alert Banner */}
-      {!isMyTurn && currentCalledNumber && hasCurrentCalledToMark && (
+      {!isGameOver && !isMyTurn && currentCalledNumber && hasCurrentCalledToMark && (
         <button
           type="button"
           onClick={() => {

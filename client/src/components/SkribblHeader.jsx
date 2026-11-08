@@ -118,6 +118,14 @@ export function SkribblHeader() {
           </div>
         )}
 
+        {/* Center: Winner celebration pill when match ends */}
+        {roomState?.winner && (
+          <div className="flex items-center space-x-1.5 bg-yellow-400 text-yellow-950 border-2 border-yellow-600 px-3.5 py-1 rounded-xl font-black text-xs sm:text-sm shadow-[0_2px_0_#854d0e] animate-bounce">
+            <span>🏆</span>
+            <span>Winner: {roomState.winner.name}</span>
+          </div>
+        )}
+
         {/* Right: Sound & Leave Desktop */}
         <div className="hidden md:flex items-center space-x-2">
           <button

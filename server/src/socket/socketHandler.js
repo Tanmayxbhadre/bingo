@@ -397,7 +397,15 @@ export function setupSocketHandlers(io) {
     socket.leave(room.code);
 
     const player = room.players.get(sessionToken);
-    const playerName = player ? player.name : 'A player';
+    if (!player) return;
+
+    // CRITICAL: If the player has already reconnected with a newer socket,
+    // ignore this stale disconnect event so active players aren't marked 'Offline'.
+    if (player.socketId && player.socketId !== socket.id) {
+      return;
+    }
+
+    const playerName = player.name || 'A player';
 
     if (isDisconnect) {
       room.handleDisconnect(sessionToken, () => {

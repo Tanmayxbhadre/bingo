@@ -304,6 +304,8 @@ export class Room {
         this.winner = caller;
         this.status = ROOM_STATUS.GAME_OVER;
         this.clearTurnTimers();
+        this.turnPlayerSessionToken = null;
+        this.currentCalledNumber = null;
 
         return {
           success: true,
@@ -315,6 +317,7 @@ export class Room {
             sessionToken: caller.sessionToken,
             name: caller.name,
             avatar: caller.avatar,
+            color: caller.color,
             completedCount: caller.completedCount,
           },
         };
@@ -371,6 +374,8 @@ export class Room {
       this.winner = player;
       this.status = ROOM_STATUS.GAME_OVER;
       this.clearTurnTimers();
+      this.turnPlayerSessionToken = null;
+      this.currentCalledNumber = null;
 
       return {
         success: true,
@@ -383,6 +388,7 @@ export class Room {
           sessionToken: player.sessionToken,
           name: player.name,
           avatar: player.avatar,
+          color: player.color,
           completedCount: player.completedCount,
         },
       };
@@ -533,6 +539,8 @@ export class Room {
   }
 
   toPublicState(recipientSessionToken) {
+    const isPlaying = this.status === ROOM_STATUS.PLAYING;
+
     const playersList = Array.from(this.players.values()).map((p, idx) => ({
       sessionToken: p.sessionToken,
       name: p.name,
@@ -540,8 +548,8 @@ export class Room {
       color: p.color || '#55b338',
       isHost: p.sessionToken === this.hostSessionToken,
       isSpectator: Boolean(p.isSpectator),
-      isOnline: p.isOnline,
-      isTurn: p.sessionToken === this.turnPlayerSessionToken,
+      isOnline: Boolean(p.isOnline),
+      isTurn: isPlaying && p.sessionToken === this.turnPlayerSessionToken,
       completedCount: p.completedCount,
       completedLines: p.completedLines,
       isWinner: p.isWinner,
@@ -550,13 +558,13 @@ export class Room {
     }));
 
     const selfPlayer = this.players.get(recipientSessionToken);
-    const turnPlayer = this.players.get(this.turnPlayerSessionToken);
+    const turnPlayer = isPlaying && this.turnPlayerSessionToken ? this.players.get(this.turnPlayerSessionToken) : null;
 
     return {
       roomCode: this.code,
       status: this.status,
       turnDurationSec: this.turnDurationSec,
-      turnTimeRemaining: this.turnTimeRemaining,
+      turnTimeRemaining: isPlaying ? this.turnTimeRemaining : 0,
       maxPlayers: this.maxPlayers,
       isPublic: this.isPublic,
       hostSessionToken: this.hostSessionToken,
@@ -566,14 +574,14 @@ export class Room {
       playerCount: playersList.length,
 
       // Turn Info
-      turnPlayerSessionToken: this.turnPlayerSessionToken,
+      turnPlayerSessionToken: isPlaying ? this.turnPlayerSessionToken : null,
       turnPlayerName: turnPlayer ? turnPlayer.name : '',
       turnPlayerAvatar: turnPlayer ? turnPlayer.avatar : '',
-      isMyTurn: recipientSessionToken === this.turnPlayerSessionToken,
+      isMyTurn: isPlaying && recipientSessionToken === this.turnPlayerSessionToken,
 
       // Called numbers
-      currentCalledNumber: this.currentCalledNumber,
-      currentCallerSessionToken: this.currentCallerSessionToken,
+      currentCalledNumber: isPlaying ? this.currentCalledNumber : null,
+      currentCallerSessionToken: isPlaying ? this.currentCallerSessionToken : null,
       calledNumbers: this.calledNumbers,
 
       winner: this.winner
@@ -581,6 +589,7 @@ export class Room {
             sessionToken: this.winner.sessionToken,
             name: this.winner.name,
             avatar: this.winner.avatar,
+            color: this.winner.color || '#55b338',
             completedCount: this.winner.completedCount,
           }
         : null,

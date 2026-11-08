@@ -26,14 +26,18 @@ export function SkribblPlayerList() {
       <div className="space-y-2.5 overflow-y-auto pr-0.5 flex-1">
         {players.map((p, index) => {
           const isMe = p.sessionToken === sessionToken;
-          const isTurn = p.sessionToken === roomState?.turnPlayerSessionToken;
+          const isGameOver = roomState?.status === 'game_over' || Boolean(roomState?.winner);
+          const isWinner = roomState?.winner?.sessionToken === p.sessionToken;
+          const isTurn = !isGameOver && p.sessionToken === roomState?.turnPlayerSessionToken;
           const count = p.completedCount || 0;
 
           return (
             <div
               key={p.sessionToken}
               className={`p-3 rounded-2xl border-3 transition-all ${
-                isTurn
+                isWinner
+                  ? 'bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-500 shadow-md ring-3 ring-yellow-400 -translate-y-0.5'
+                  : isTurn
                   ? 'bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-500 shadow-md ring-3 ring-emerald-300 -translate-y-0.5'
                   : isMe
                   ? 'bg-gradient-to-r from-blue-50 to-sky-50 border-blue-400 shadow-sm'
@@ -65,9 +69,14 @@ export function SkribblPlayerList() {
                     )}
                   </div>
 
-                  {/* Active turn or online status */}
+                  {/* Active turn, winner or online status */}
                   <div className="flex items-center space-x-1 mt-0.5">
-                    {isTurn ? (
+                    {isWinner ? (
+                      <span className="bg-yellow-400 text-yellow-950 font-black text-[10px] px-2 py-0.5 rounded-md flex items-center space-x-1 shadow-sm border border-yellow-600">
+                        <span>🏆</span>
+                        <span>WINNER</span>
+                      </span>
+                    ) : isTurn ? (
                       <span className="bg-emerald-500 text-white font-black text-[10px] px-2 py-0.5 rounded-md flex items-center space-x-1 animate-pulse shadow-sm">
                         <span>✏️</span>
                         <span>CALLING NOW</span>
