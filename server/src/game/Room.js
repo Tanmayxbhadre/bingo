@@ -76,6 +76,21 @@ export class Room {
     return player;
   }
 
+  updatePlayerProfile(sessionToken, { name, avatar, color }) {
+    const player = this.players.get(sessionToken);
+    if (!player) return null;
+    if (name) {
+      player.name = String(name).slice(0, 16).trim() || player.name;
+    }
+    if (avatar) {
+      player.avatar = String(avatar).slice(0, 6);
+    }
+    if (color) {
+      player.color = String(color).slice(0, 20);
+    }
+    return player;
+  }
+
   reconnectPlayer(sessionToken, newSocketId) {
     const player = this.players.get(sessionToken);
     if (!player) return null;

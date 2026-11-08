@@ -186,18 +186,33 @@ export function GameProvider({ children }) {
   }, [sessionToken]);
 
   const updateProfile = (newName, newAvatarIdx, newColor) => {
+    let updatedName = name;
+    let updatedAvatarEmoji = currentAvatar.emoji;
+    let updatedColor = avatarColor;
+
     if (newName !== undefined) {
       const trimmed = newName.slice(0, 16);
       setName(trimmed);
       localStorage.setItem('bingo_name', trimmed);
+      updatedName = trimmed;
     }
-    if (newAvatarIdx !== undefined) {
+    if (newAvatarIdx !== undefined && AVATARS[newAvatarIdx]) {
       setAvatarIndex(newAvatarIdx);
       localStorage.setItem('bingo_avatar_idx', String(newAvatarIdx));
+      updatedAvatarEmoji = AVATARS[newAvatarIdx].emoji;
     }
     if (newColor !== undefined) {
       setAvatarColor(newColor);
       localStorage.setItem('bingo_avatar_color', newColor);
+      updatedColor = newColor;
+    }
+
+    if (socketRef.current && socketRef.current.connected) {
+      socketRef.current.emit(SOCKET_EVENTS.UPDATE_PROFILE, {
+        name: updatedName,
+        avatar: updatedAvatarEmoji,
+        color: updatedColor,
+      });
     }
   };
 

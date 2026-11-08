@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Play, Copy, Check, Share2, Crown, Home } from 'lucide-react';
+import { Play, Copy, Check, Share2, Crown, Home, Palette, Pencil } from 'lucide-react';
 import { useGame } from '../context/GameContext.jsx';
 import { SkribblHeader } from '../components/SkribblHeader.jsx';
 import { SkribblBingoCard } from '../components/SkribblBingoCard.jsx';
@@ -8,6 +8,7 @@ import { SkribblPlayerList } from '../components/SkribblPlayerList.jsx';
 import { SkribblChat } from '../components/SkribblChat.jsx';
 import { WinnerModal } from '../components/WinnerModal.jsx';
 import { EmojiReactionTray } from '../components/EmojiReactionTray.jsx';
+import { CustomizeProfileModal } from '../components/CustomizeProfileModal.jsx';
 import { ROOM_STATUS } from '@shared/constants/gameConstants.js';
 import { sounds } from '../services/soundEffects.js';
 
@@ -27,7 +28,9 @@ export function RoomPage() {
   const [copied, setCopied] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
   const [joinFailed, setJoinFailed] = useState(false);
+  const [showCustomizeModal, setShowCustomizeModal] = useState(false);
   const [mobileTab, setMobileTab] = useState('card'); // 'card' | 'players' | 'chat'
+  const hasPromptedCustomizeRef = useRef(false);
 
   useEffect(() => {
     if (roomCode && connected && !joinFailed) {
@@ -44,6 +47,17 @@ export function RoomPage() {
       navigate('/', { replace: true });
     }
   }, [roomState, roomCode, navigate]);
+
+  // If player joined directly via link with default name, auto-prompt them to customize
+  useEffect(() => {
+    if (roomState && roomState.status === ROOM_STATUS.LOBBY) {
+      const me = roomState.players?.find((p) => p.sessionToken === sessionToken);
+      if (me && me.name === 'Player' && !hasPromptedCustomizeRef.current) {
+        hasPromptedCustomizeRef.current = true;
+        setShowCustomizeModal(true);
+      }
+    }
+  }, [roomState, sessionToken]);
 
   const handleCopyLink = () => {
     sounds.playPop();
@@ -151,9 +165,18 @@ export function RoomPage() {
                 <span className="font-black text-sm text-[#0b2c4d] uppercase tracking-wide">
                   Connected Players ({roomState.playerCount})
                 </span>
-                <span className="text-xs font-bold text-slate-500">
-                  Max: {roomState.maxPlayers}
-                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    sounds.playPop();
+                    setShowCustomizeModal(true);
+                  }}
+                  className="bg-yellow-400 hover:bg-yellow-300 text-yellow-950 font-black text-xs px-3 py-1.5 rounded-xl border-2 border-[#0b2c4d] shadow-[0_2px_0_#08233d] flex items-center space-x-1 transition-all active:scale-95 cursor-pointer"
+                  title="Customize your character & name"
+                >
+                  <Palette className="w-3.5 h-3.5" />
+                  <span>Customize Character ✏️</span>
+                </button>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -162,9 +185,13 @@ export function RoomPage() {
                   return (
                     <div
                       key={p.sessionToken}
+                      onClick={isMe ? () => { sounds.playPop(); setShowCustomizeModal(true); } : undefined}
                       className={`flex flex-col items-center p-3 rounded-2xl border-3 transition-all ${
-                        isMe ? 'bg-blue-50 border-blue-400' : 'bg-slate-50 border-slate-200'
+                        isMe
+                          ? 'bg-blue-50 border-blue-400 shadow-sm cursor-pointer hover:scale-105 hover:border-[#0084ff]'
+                          : 'bg-slate-50 border-slate-200'
                       }`}
+                      title={isMe ? 'Click to customize character & name!' : undefined}
                     >
                       <div
                         className="w-12 h-12 rounded-2xl border-2 border-[#0b2c4d] flex items-center justify-center text-3xl mb-1 shadow-sm"
@@ -183,8 +210,9 @@ export function RoomPage() {
                           </span>
                         )}
                         {isMe && (
-                          <span className="bg-[#0084ff] text-white text-[9px] font-black px-1.5 py-0.2 rounded">
-                            YOU
+                          <span className="bg-[#0084ff] text-white text-[9px] font-black px-1.5 py-0.2 rounded flex items-center space-x-0.5">
+                            <Pencil className="w-2 h-2" />
+                            <span>YOU (EDIT)</span>
                           </span>
                         )}
                       </div>
@@ -310,6 +338,12 @@ export function RoomPage() {
       {roomState.winner && (
         <WinnerModal winner={roomState.winner} />
       )}
+
+      {/* CHARACTER / PROFILE CUSTOMIZATION MODAL */}
+      <CustomizeProfileModal
+        isOpen={showCustomizeModal}
+        onClose={() => setShowCustomizeModal(false)}
+      />
     </div>
   );
 }

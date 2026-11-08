@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Clock, Copy, Check, Volume2, VolumeX, LogOut, Crown } from 'lucide-react';
+import { Clock, Copy, Check, Volume2, VolumeX, LogOut, Crown, Pause, Play } from 'lucide-react';
 import { useGame } from '../context/GameContext.jsx';
 import { SkribblLogo } from './SkribblLogo.jsx';
 import { sounds } from '../services/soundEffects.js';
@@ -14,6 +14,8 @@ export function SkribblHeader() {
     isMuted,
     toggleSound,
     turnTime,
+    pauseGame,
+    resumeGame,
   } = useGame();
 
   const [copied, setCopied] = useState(false);
@@ -33,6 +35,7 @@ export function SkribblHeader() {
   };
 
   const isPlaying = roomState?.status === ROOM_STATUS.PLAYING;
+  const isPaused = roomState?.status === ROOM_STATUS.PAUSED;
   const isMyTurn = roomState?.isMyTurn;
   const turnPlayerName = roomState?.turnPlayerName || 'Opponent';
   const currentCalled = roomState?.currentCalledNumber;

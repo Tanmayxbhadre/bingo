@@ -353,6 +353,29 @@ export function setupSocketHandlers(io) {
       }
     });
 
+    // 10c. Update Character / Profile in Room
+    socket.on(SOCKET_EVENTS.UPDATE_PROFILE, (payload, callback) => {
+      try {
+        const record = roomManager.getRoomBySocket(socket.id);
+        if (!record || !record.room) {
+          return callback?.({ success: false, error: 'Not in a room' });
+        }
+        const { room, sessionToken } = record;
+        const player = room.updatePlayerProfile(sessionToken, {
+          name: payload?.name,
+          avatar: payload?.avatar,
+          color: payload?.color,
+        });
+
+        if (player) {
+          broadcastRoomState(room);
+          callback?.({ success: true, player });
+        }
+      } catch (err) {
+        callback?.({ success: false, error: err.message });
+      }
+    });
+
     // 11. Leave Room
     socket.on(SOCKET_EVENTS.LEAVE_ROOM, () => {
       handleUserLeave(socket);

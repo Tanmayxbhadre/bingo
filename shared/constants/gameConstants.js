@@ -47,6 +47,9 @@ export const SOCKET_EVENTS = {
   // Real-time floating emoji reaction
   REACTION_EMOJI: 'reaction_emoji',
 
+  // Profile update
+  UPDATE_PROFILE: 'update_profile',
+
   // Chat
   CHAT_MESSAGE: 'chat_message',
 
