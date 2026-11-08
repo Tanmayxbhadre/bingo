@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Users, Crown, Send, MessageSquare, Smile } from 'lucide-react';
 import { useGame } from '../context/GameContext.jsx';
+import { CharacterAvatar } from './CharacterAvatar.jsx';
 import { sounds } from '../services/soundEffects.js';
 
 export function PlayerSidebar() {
@@ -64,8 +65,8 @@ export function PlayerSidebar() {
                 } ${!p.isOnline ? 'opacity-50' : ''}`}
               >
                 <div className="flex items-center space-x-2.5">
-                  <div className="text-2xl w-8 h-8 flex items-center justify-center bg-white/20 rounded-xl shadow-sm">
-                    {p.avatar}
+                  <div className="flex-shrink-0">
+                    <CharacterAvatar id={p.avatar} color={p.color || '#55b338'} size={32} />
                   </div>
                   <div>
                     <div className="flex items-center space-x-1">

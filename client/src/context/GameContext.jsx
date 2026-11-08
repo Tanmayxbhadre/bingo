@@ -84,7 +84,7 @@ export function GameProvider({ children }) {
             roomCode: code,
             sessionToken,
             name: nameRef.current || 'Player',
-            avatar: avatarRef.current?.emoji || '😃',
+            avatar: avatarRef.current?.id || 'cool',
             color: colorRef.current || '#55b338',
           },
           (res) => {
@@ -110,7 +110,7 @@ export function GameProvider({ children }) {
             roomCode: code,
             sessionToken,
             name: nameRef.current || 'Player',
-            avatar: avatarRef.current?.emoji || '😃',
+            avatar: avatarRef.current?.id || 'cool',
             color: colorRef.current || '#55b338',
           },
           (res) => {
@@ -187,7 +187,7 @@ export function GameProvider({ children }) {
 
   const updateProfile = (newName, newAvatarIdx, newColor) => {
     let updatedName = name;
-    let updatedAvatarEmoji = currentAvatar.emoji;
+    let updatedAvatarId = currentAvatar.id;
     let updatedColor = avatarColor;
 
     if (newName !== undefined) {
@@ -199,7 +199,7 @@ export function GameProvider({ children }) {
     if (newAvatarIdx !== undefined && AVATARS[newAvatarIdx]) {
       setAvatarIndex(newAvatarIdx);
       localStorage.setItem('bingo_avatar_idx', String(newAvatarIdx));
-      updatedAvatarEmoji = AVATARS[newAvatarIdx].emoji;
+      updatedAvatarId = AVATARS[newAvatarIdx].id;
     }
     if (newColor !== undefined) {
       setAvatarColor(newColor);
@@ -210,7 +210,7 @@ export function GameProvider({ children }) {
     if (socketRef.current && socketRef.current.connected) {
       socketRef.current.emit(SOCKET_EVENTS.UPDATE_PROFILE, {
         name: updatedName,
-        avatar: updatedAvatarEmoji,
+        avatar: updatedAvatarId,
         color: updatedColor,
       });
     }
@@ -232,7 +232,7 @@ export function GameProvider({ children }) {
         {
           sessionToken,
           name: name.trim() || 'Player',
-          avatar: currentAvatar.emoji,
+          avatar: currentAvatar.id,
           color: avatarColor,
           options,
         },
@@ -261,7 +261,7 @@ export function GameProvider({ children }) {
           roomCode: code.toUpperCase().trim(),
           sessionToken,
           name: name.trim() || 'Player',
-          avatar: currentAvatar.emoji,
+          avatar: currentAvatar.id,
           color: avatarColor,
         },
         (res) => {

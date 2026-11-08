@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import confetti from 'canvas-confetti';
 import { Trophy, RotateCcw, Home, Eye, Award, Frown, Sparkles } from 'lucide-react';
 import { useGame } from '../context/GameContext.jsx';
+import { CharacterAvatar } from './CharacterAvatar.jsx';
 import { sounds } from '../services/soundEffects.js';
 
 export function WinnerModal({ winner }) {
@@ -119,10 +120,8 @@ export function WinnerModal({ winner }) {
           }`}
         >
           <div className="relative mb-1">
-            <span className="text-5xl drop-shadow-sm select-none">
-              {winner?.avatar || '🤠'}
-            </span>
-            <span className="absolute -top-3 -right-2 text-xl select-none animate-bounce">
+            <CharacterAvatar id={winner?.avatar} color={winner?.color || '#55b338'} size={68} />
+            <span className="absolute -top-3 -right-2 text-2xl select-none animate-bounce">
               👑
             </span>
           </div>

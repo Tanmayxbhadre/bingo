@@ -9,6 +9,7 @@ import { SkribblChat } from '../components/SkribblChat.jsx';
 import { WinnerModal } from '../components/WinnerModal.jsx';
 import { EmojiReactionTray } from '../components/EmojiReactionTray.jsx';
 import { CustomizeProfileModal } from '../components/CustomizeProfileModal.jsx';
+import { CharacterAvatar } from '../components/CharacterAvatar.jsx';
 import { ROOM_STATUS } from '@shared/constants/gameConstants.js';
 import { sounds } from '../services/soundEffects.js';
 
@@ -193,11 +194,8 @@ export function RoomPage() {
                       }`}
                       title={isMe ? 'Click to customize character & name!' : undefined}
                     >
-                      <div
-                        className="w-12 h-12 rounded-2xl border-2 border-[#0b2c4d] flex items-center justify-center text-3xl mb-1 shadow-sm"
-                        style={{ backgroundColor: p.color || '#55b338' }}
-                      >
-                        {p.avatar}
+                      <div className="mb-1 flex-shrink-0">
+                        <CharacterAvatar id={p.avatar} color={p.color || '#55b338'} size={48} />
                       </div>
                       <span className="font-extrabold text-xs text-[#0b2c4d] truncate max-w-full">
                         {p.name}

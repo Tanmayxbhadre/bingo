@@ -37,10 +37,17 @@ export class Room {
     this.lastChatTimestamp = new Map();
 
     // Add initial host player
-    this.addPlayer(hostInfo.socketId, hostInfo.sessionToken, hostInfo.name, hostInfo.avatar, true);
+    this.addPlayer(
+      hostInfo.socketId,
+      hostInfo.sessionToken,
+      hostInfo.name,
+      hostInfo.avatar,
+      hostInfo.color || '#55b338',
+      true
+    );
   }
 
-  addPlayer(socketId, sessionToken, name, avatar, isHost = false) {
+  addPlayer(socketId, sessionToken, name, avatar, color = '#55b338', isHost = false) {
     if (this.players.size >= this.maxPlayers && !this.players.has(sessionToken)) {
       throw new Error('Room is full');
     }
@@ -57,8 +64,8 @@ export class Room {
       sessionToken,
       socketId,
       name: (name || 'Player').slice(0, 16).trim(),
-      avatar: avatar || '😃',
-      color: '#55b338',
+      avatar: avatar ? String(avatar).slice(0, 32) : 'cool',
+      color: color || '#55b338',
       isHost,
       isSpectator: isSpectating,
       isOnline: true,
@@ -83,7 +90,7 @@ export class Room {
       player.name = String(name).slice(0, 16).trim() || player.name;
     }
     if (avatar) {
-      player.avatar = String(avatar).slice(0, 6);
+      player.avatar = String(avatar).slice(0, 32);
     }
     if (color) {
       player.color = String(color).slice(0, 20);

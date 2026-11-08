@@ -15,7 +15,7 @@ export function setupSocketHandlers(io) {
     // 1. Create Room
     socket.on(SOCKET_EVENTS.CREATE_ROOM, (payload, callback) => {
       try {
-        const { sessionToken, name, avatar, options } = payload || {};
+        const { sessionToken, name, avatar, color, options } = payload || {};
         if (!sessionToken) {
           return callback?.({ success: false, error: 'Session token is required' });
         }
@@ -25,7 +25,8 @@ export function setupSocketHandlers(io) {
             socketId: socket.id,
             sessionToken,
             name: name || 'Host',
-            avatar: avatar || '😃',
+            avatar: avatar || 'cool',
+            color: color || '#55b338',
           },
           options || {}
         );
@@ -45,7 +46,7 @@ export function setupSocketHandlers(io) {
     // 2. Join Room
     socket.on(SOCKET_EVENTS.JOIN_ROOM, (payload, callback) => {
       try {
-        const { roomCode, sessionToken, name, avatar } = payload || {};
+        const { roomCode, sessionToken, name, avatar, color } = payload || {};
         if (!roomCode || !sessionToken) {
           return callback?.({ success: false, error: 'Room code and session token are required' });
         }
@@ -56,7 +57,7 @@ export function setupSocketHandlers(io) {
         }
 
         const isReconnect = room.players.has(sessionToken);
-        const player = room.addPlayer(socket.id, sessionToken, name, avatar, false);
+        const player = room.addPlayer(socket.id, sessionToken, name, avatar, color, false);
 
         roomManager.bindSocket(socket.id, room.code, sessionToken);
         socket.join(room.code);

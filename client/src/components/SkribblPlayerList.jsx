@@ -1,6 +1,7 @@
 import React from 'react';
 import { Crown } from 'lucide-react';
 import { useGame } from '../context/GameContext.jsx';
+import { CharacterAvatar } from './CharacterAvatar.jsx';
 
 export function SkribblPlayerList() {
   const { roomState, sessionToken } = useGame();
@@ -41,11 +42,8 @@ export function SkribblPlayerList() {
                   #{index + 1}
                 </span>
 
-                <div
-                  className="w-10 h-10 rounded-2xl border-2 border-[#0b2c4d] flex items-center justify-center text-2xl flex-shrink-0 shadow-sm"
-                  style={{ backgroundColor: p.color || '#55b338' }}
-                >
-                  {p.avatar}
+                <div className="flex-shrink-0">
+                  <CharacterAvatar id={p.avatar} color={p.color || '#55b338'} size={38} />
                 </div>
 
                 <div className="min-w-0 flex-1">

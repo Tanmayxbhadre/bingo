@@ -100,3 +100,4 @@ export function CustomizeProfileModal({ isOpen, onClose }) {
     </div>
   );
 }
+
