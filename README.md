@@ -10,16 +10,21 @@
 
 ## 🚀 Key Features
 
-- **Authoritative Server Engine**: All number pools, random drawing, automatic marking, line calculations, and win conditions are controlled by the server to prevent cheating or client-side tampering.
-- **5×5 Bingo Cards**: Every player receives an independently generated 5×5 card with 25 unique random numbers between 1 and 75 (no free center cell, no mandatory column ranges).
-- **Automatic Marking**: Numbers called by the server are automatically marked on matching players' cards in real-time.
+- **Authoritative Server Engine**: All cards (numbers 1–25), turn management, automatic verification, and line calculations are strictly validated by the server to prevent cheating or client-side tampering.
+- **Turn-Based Multiplayer Interaction (Skribbl.io Style)**:
+  - Both players share the same set of numbers 1–25 in independently scrambled 5×5 grids.
+  - Players take turns picking a number from their card to call it.
+  - When an opponent calls a number, the player clicks it on their card to stamp a red crayon `✕` with instant 0ms optimistic visual feedback.
 - **Winning Condition (ANY 5 Lines)**: The first player to complete any 5 lines (rows, columns, or diagonals) wins BINGO! Intersecting cells contribute to multiple lines.
+- **Vibrant & Dynamic Animated Background**: Smoothly panning diagonal comic polka-dot patterns, soft radiant ambient glow orbs, and floating 3D-illustrated glossy Bingo balls drifting across the viewport.
 - **Real-Time Multiplayer Lobby**:
   - 6-character room codes.
   - 1-click invite link copying.
   - Host migration if the host disconnects.
   - 45-second reconnection grace period preserving player card and match progress.
-  - Host controls: calling speed (2s, 4s, 6s, 8s), pause/resume, and "Play Again" rematch without leaving the room.
+  - Host controls: turn duration (30s, 45s, 60s), pause/resume, and "Play Again" rematch without leaving the room.
+- **Floating Emoji Reactions**: Live floating reaction dock (`🔥`, `🎉`, `🎯`, `😎`, `😂`, `😱`, `👏`, `⭐`, `💥`, `🥳`) with real-time room-wide animations.
+- **16 Expressive Comic Avatars**: Full avatar customizer with chunky 3D buttons, 10 comic colors, and a one-click 16-emoji selector grid.
 - **Live Room Chat**: Room messaging with username, avatar, timestamps, quick emoji reactions, and rate limiting.
 - **Custom Sound Effects & Celebrations**: Synthesized Web Audio API sound effects (number call chime, mark chime, win fanfare) with mute toggle, plus confetti explosion for winners.
 - **Public Room Directory**: Browse active public games and join waiting lobbies with one click.

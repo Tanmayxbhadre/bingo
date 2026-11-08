@@ -2,6 +2,14 @@ class SoundEffects {
   constructor() {
     this.ctx = null;
     this.isMuted = localStorage.getItem('bingo_muted') === 'true';
+
+    if (typeof window !== 'undefined') {
+      const unlock = () => {
+        this.init();
+      };
+      window.addEventListener('pointerdown', unlock, { once: true });
+      window.addEventListener('keydown', unlock, { once: true });
+    }
   }
 
   init() {
@@ -203,6 +211,33 @@ class SoundEffects {
 
       osc.start();
       osc.stop(this.ctx.currentTime + 0.11);
+    } catch (e) {}
+  }
+
+  // Defeat / Runner-up sound (gentle descending cartoon notes)
+  playDefeat() {
+    if (this.isMuted) return;
+    this.init();
+    if (!this.ctx) return;
+
+    try {
+      const notes = [392.00, 311.13, 261.63]; // G4, Eb4, C4 (descending minor)
+      notes.forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.16);
+
+        gain.gain.setValueAtTime(0.18, this.ctx.currentTime + idx * 0.16);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + idx * 0.16 + 0.35);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(this.ctx.currentTime + idx * 0.16);
+        osc.stop(this.ctx.currentTime + idx * 0.16 + 0.38);
+      });
     } catch (e) {}
   }
 }
