@@ -270,15 +270,15 @@ export function HomePage() {
       {/* CREATE ROOM MODAL */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-pop">
-          <div className="bg-white border-4 border-[#0b2c4d] rounded-3xl p-6 max-w-sm w-full text-[#0b2c4d] shadow-[0_8px_0_#08233d] space-y-4">
-            <h2 className="text-2xl font-black text-center text-[#0b2c4d]">
+          <div className="bg-gradient-to-b from-white via-white to-sky-50/50 border-4 border-[#0b2c4d] rounded-[32px] p-6 max-w-sm w-full text-[#072847] shadow-[0_12px_0_#072847,0_25px_40px_rgba(0,0,0,0.35)] space-y-4">
+            <h2 className="text-2xl font-black text-center text-[#072847]">
               Create Private Room
             </h2>
 
             <form onSubmit={handleCreateSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-black uppercase text-slate-500 mb-1">
-                  Turn Timer: <span className="text-[#0084ff]">{turnDuration} seconds</span>
+                  Turn Timer: <span className="text-[#0284c7] font-black">{turnDuration} seconds</span>
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   {[30, 45, 60].map((sec) => (
@@ -286,10 +286,10 @@ export function HomePage() {
                       key={sec}
                       type="button"
                       onClick={() => setTurnDuration(sec)}
-                      className={`py-2 rounded-xl text-xs font-black border-2 transition-all ${
+                      className={`py-2 rounded-xl text-xs font-black border-2 transition-all cursor-pointer ${
                         turnDuration === sec
-                          ? 'bg-[#0084ff] text-white border-[#005bb5] shadow-[0_3px_0_#00458a]'
-                          : 'bg-slate-100 text-slate-700 border-slate-300'
+                          ? 'bg-[#0284c7] text-white border-[#0369a1] shadow-[0_3px_0_#072847] -translate-y-0.5'
+                          : 'bg-white text-slate-700 border-slate-300 hover:border-slate-400'
                       }`}
                     >
                       {sec}s
@@ -300,7 +300,7 @@ export function HomePage() {
 
               <div>
                 <label className="block text-xs font-black uppercase text-slate-500 mb-1">
-                  Max Players: <span className="text-[#0084ff]">{maxPlayers}</span>
+                  Max Players: <span className="text-[#0284c7] font-black">{maxPlayers}</span>
                 </label>
                 <input
                   type="range"
@@ -308,17 +308,17 @@ export function HomePage() {
                   max="16"
                   value={maxPlayers}
                   onChange={(e) => setMaxPlayers(e.target.value)}
-                  className="w-full accent-[#0084ff] cursor-pointer"
+                  className="w-full accent-[#0284c7] cursor-pointer"
                 />
               </div>
 
-              <div className="flex items-center justify-between bg-slate-100 p-2.5 rounded-xl border border-slate-300">
-                <span className="font-bold text-xs">Public Room</span>
+              <div className="flex items-center justify-between bg-white p-3 rounded-xl border-2 border-slate-200">
+                <span className="font-black text-xs text-[#072847]">Public Room</span>
                 <input
                   type="checkbox"
                   checked={isPublic}
                   onChange={(e) => setIsPublic(e.target.checked)}
-                  className="w-5 h-5 accent-[#55b338] rounded cursor-pointer"
+                  className="w-5 h-5 accent-[#22c55e] rounded cursor-pointer"
                 />
               </div>
 
@@ -326,14 +326,14 @@ export function HomePage() {
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="flex-1 bg-slate-200 hover:bg-slate-300 font-bold py-2.5 rounded-xl text-xs"
+                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-black py-3 rounded-xl text-xs border-2 border-slate-300 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex-1 skribbl-btn-green py-2.5 rounded-xl text-sm"
+                  className="flex-1 skribbl-btn-green py-3 rounded-xl text-sm font-black cursor-pointer shadow-md"
                 >
                   Create
                 </button>
@@ -346,27 +346,27 @@ export function HomePage() {
       {/* PUBLIC ROOMS MODAL */}
       {showPublicModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-pop">
-          <div className="bg-white border-4 border-[#0b2c4d] rounded-3xl p-5 max-w-sm w-full text-[#0b2c4d] shadow-[0_8px_0_#08233d] space-y-3">
-            <div className="flex items-center justify-between border-b-2 border-slate-200 pb-2">
-              <span className="font-black text-lg">Public Rooms</span>
+          <div className="bg-gradient-to-b from-white via-white to-sky-50/50 border-4 border-[#0b2c4d] rounded-[32px] p-6 max-w-sm w-full text-[#072847] shadow-[0_12px_0_#072847,0_25px_40px_rgba(0,0,0,0.35)] space-y-3.5">
+            <div className="flex items-center justify-between border-b-2 border-slate-200 pb-2.5">
+              <span className="font-black text-xl text-[#072847]">Public Rooms</span>
               <button
                 onClick={fetchPublicRooms}
-                className="text-xs bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-xl font-bold"
+                className="text-xs bg-white hover:bg-slate-100 border-2 border-slate-200 px-3 py-1 rounded-xl font-black text-[#0284c7] cursor-pointer shadow-sm"
               >
                 Refresh
               </button>
             </div>
 
-            <div className="max-h-56 overflow-y-auto space-y-2 pr-1">
+            <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
               {publicRooms.length === 0 ? (
-                <div className="text-center py-8 text-slate-400 text-xs italic">
+                <div className="text-center py-10 text-slate-400 text-xs italic font-semibold">
                   No public rooms waiting. Create one now!
                 </div>
               ) : (
                 publicRooms.map((room) => (
                   <div
                     key={room.code}
-                    className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border-2 border-slate-200"
+                    className="flex items-center justify-between p-3 rounded-2xl bg-white border-2 border-slate-200 shadow-sm"
                   >
                     <div>
                       <div className="font-mono font-black text-[#0084ff] text-base">{room.code}</div>

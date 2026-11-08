@@ -55,9 +55,9 @@ export function SkribblBingoCard({
   return (
     <div className="flex flex-col items-center w-full max-w-lg mx-auto select-none">
       {/* 5x5 Drawing Canvas Card */}
-      <div className="relative w-full bg-gradient-to-b from-white via-white to-sky-50/50 rounded-[32px] border-4 border-[#0b2c4d] shadow-[0_10px_0_#072847,0_20px_35px_rgba(7,43,77,0.3)] p-3 sm:p-4">
-        {/* Animated Marker Strike-through for Completed Lines */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none z-10 p-3 sm:p-4">
+      <div className="relative w-full bg-gradient-to-b from-white via-white to-sky-50/50 rounded-3xl sm:rounded-[32px] border-4 border-[#0b2c4d] shadow-[0_8px_0_#072847,0_16px_30px_rgba(7,43,77,0.25)] p-2.5 sm:p-4">
+        {/* Clean, Subtle Strikethrough Guide Lines */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none z-10 p-2.5 sm:p-4">
           {completedLines.map((lineId) => {
             if (lineId.startsWith('row-')) {
               const r = parseInt(lineId.split('-')[1], 10);
@@ -65,15 +65,14 @@ export function SkribblBingoCard({
               return (
                 <line
                   key={lineId}
-                  x1="4%"
+                  x1="5%"
                   y1={y}
-                  x2="96%"
+                  x2="95%"
                   y2={y}
-                  stroke="#ef4444"
-                  strokeWidth="8"
+                  stroke="#f59e0b"
+                  strokeWidth="4"
                   strokeLinecap="round"
-                  strokeOpacity="0.75"
-                  className="filter drop-shadow-[0_2px_4px_rgba(239,68,68,0.4)]"
+                  strokeOpacity="0.55"
                 />
               );
             }
@@ -84,14 +83,13 @@ export function SkribblBingoCard({
                 <line
                   key={lineId}
                   x1={x}
-                  y1="4%"
+                  y1="5%"
                   x2={x}
-                  y2="96%"
-                  stroke="#ef4444"
-                  strokeWidth="8"
+                  y2="95%"
+                  stroke="#f59e0b"
+                  strokeWidth="4"
                   strokeLinecap="round"
-                  strokeOpacity="0.75"
-                  className="filter drop-shadow-[0_2px_4px_rgba(239,68,68,0.4)]"
+                  strokeOpacity="0.55"
                 />
               );
             }
@@ -99,15 +97,14 @@ export function SkribblBingoCard({
               return (
                 <line
                   key={lineId}
-                  x1="6%"
-                  y1="6%"
-                  x2="94%"
-                  y2="94%"
-                  stroke="#ef4444"
-                  strokeWidth="8"
+                  x1="7%"
+                  y1="7%"
+                  x2="93%"
+                  y2="93%"
+                  stroke="#f59e0b"
+                  strokeWidth="4"
                   strokeLinecap="round"
-                  strokeOpacity="0.75"
-                  className="filter drop-shadow-[0_2px_4px_rgba(239,68,68,0.4)]"
+                  strokeOpacity="0.55"
                 />
               );
             }
@@ -115,15 +112,14 @@ export function SkribblBingoCard({
               return (
                 <line
                   key={lineId}
-                  x1="94%"
-                  y1="6%"
-                  x2="6%"
-                  y2="94%"
-                  stroke="#ef4444"
-                  strokeWidth="8"
+                  x1="93%"
+                  y1="7%"
+                  x2="7%"
+                  y2="93%"
+                  stroke="#f59e0b"
+                  strokeWidth="4"
                   strokeLinecap="round"
-                  strokeOpacity="0.75"
-                  className="filter drop-shadow-[0_2px_4px_rgba(239,68,68,0.4)]"
+                  strokeOpacity="0.55"
                 />
               );
             }
@@ -131,7 +127,7 @@ export function SkribblBingoCard({
           })}
         </svg>
 
-        <div className="grid grid-cols-5 gap-2 sm:gap-2.5">
+        <div className="grid grid-cols-5 gap-1.5 sm:gap-2.5">
           {card.map((cell) => {
             const isMarked = cell.marked;
             const isWinningCell = winningSet.has(cell.index);
@@ -139,20 +135,20 @@ export function SkribblBingoCard({
             const canCallThis = isMyTurn && !isMarked && !calledSet.has(cell.number);
             const isClickable = !isMarked && (isCalledToMark || canCallThis);
 
-            let cellClass = 'bg-white text-[#072847] border-3 border-[#0b2c4d] shadow-[0_3px_0_#072847]';
+            let cellClass = 'bg-white text-[#072847] border-3 border-[#0b2c4d] shadow-[0_2.5px_0_#072847]';
 
             if (isWinningCell) {
-              // Glowing celebratory golden winning cell
-              cellClass = 'bg-gradient-to-b from-[#fef08a] via-[#fde047] to-[#eab308] text-amber-950 font-black border-4 border-[#854d0e] shadow-[0_4px_0_#713f12,0_6px_14px_rgba(234,179,8,0.35)] ring-2 ring-yellow-300 scale-[1.02] z-2';
+              // Glowing celebratory golden winning cell (clean & distinct)
+              cellClass = 'bg-gradient-to-b from-[#fef08a] via-[#fde047] to-[#eab308] text-amber-950 font-black border-3 sm:border-4 border-[#854d0e] shadow-[0_3px_0_#713f12] ring-2 ring-yellow-300 scale-[1.02] z-2';
             } else if (isMarked) {
-              // Marked with skribbl crayon stamp
-              cellClass = 'bg-slate-100 text-slate-300 border-2 border-slate-300 shadow-[0_2px_0_#cbd5e1]';
+              // Marked cell (soft, clean, doesn't clutter)
+              cellClass = 'bg-slate-100/90 text-slate-400 border-2 border-slate-300 shadow-[0_2px_0_#cbd5e1]';
             } else if (isCalledToMark) {
               // Number was called! Vibrant alert to click and mark
-              cellClass = 'bg-gradient-to-b from-amber-100 via-rose-50 to-amber-200 text-[#072847] font-black border-4 border-rose-500 shadow-[0_5px_0_#9f1239] ring-4 ring-rose-400/70 animate-bounce cursor-pointer scale-105 z-10';
+              cellClass = 'bg-gradient-to-b from-amber-100 to-rose-100 text-[#072847] font-black border-3 sm:border-4 border-rose-500 shadow-[0_4px_0_#9f1239] ring-3 ring-rose-400/70 animate-bounce cursor-pointer scale-105 z-10';
             } else if (canCallThis) {
               // It's your turn to call
-              cellClass = 'bg-white hover:bg-emerald-50 text-[#072847] font-black border-3 border-[#0b2c4d] hover:border-emerald-600 shadow-[0_4px_0_#072847] hover:shadow-[0_4px_0_#14532d] cursor-pointer hover:-translate-y-1 transition-all';
+              cellClass = 'bg-white hover:bg-emerald-50 text-[#072847] font-black border-3 border-[#0b2c4d] hover:border-emerald-600 shadow-[0_3px_0_#072847] hover:shadow-[0_3px_0_#14532d] cursor-pointer hover:-translate-y-0.5 transition-all';
             }
 
             return (
@@ -161,25 +157,32 @@ export function SkribblBingoCard({
                 type="button"
                 onClick={() => handleCellClick(cell)}
                 disabled={!isClickable}
-                className={`relative aspect-square rounded-2xl flex flex-col items-center justify-center select-none transition-all duration-150 active:translate-y-0.5 ${cellClass}`}
+                className={`relative aspect-square rounded-xl sm:rounded-2xl flex flex-col items-center justify-center select-none transition-all duration-150 active:translate-y-0.5 ${cellClass}`}
               >
                 {/* Number */}
-                <span className={`text-2xl sm:text-3xl md:text-4xl font-black ${isMarked ? (isWinningCell ? 'text-amber-950/40' : 'opacity-25') : ''}`}>
+                <span className={`text-xl sm:text-3xl md:text-4xl font-black ${isMarked && !isWinningCell ? 'opacity-30' : ''}`}>
                   {cell.number}
                 </span>
 
-                {/* Hand-drawn Red Crayon Cross ✕ when marked */}
-                {isMarked && (
+                {/* Clean, Non-messy Stamp */}
+                {isMarked && !isWinningCell && (
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <span className="text-4xl sm:text-5xl font-black text-[#ef4444] drop-shadow-sm select-none transform -rotate-6">
+                    <span className="text-2xl sm:text-3xl md:text-4xl font-black text-[#ef4444]/80 select-none transform -rotate-12">
                       ✕
                     </span>
                   </div>
                 )}
 
+                {/* Winning Cell Star Indicator */}
+                {isWinningCell && (
+                  <span className="absolute top-1 right-1 text-[10px] sm:text-xs select-none">
+                    ⭐
+                  </span>
+                )}
+
                 {/* Pulsing "TAP!" badge when called */}
                 {isCalledToMark && (
-                  <span className="absolute -top-2 -right-1 bg-rose-500 text-white font-black text-[10px] px-2 py-0.5 rounded-full uppercase tracking-tight shadow-md animate-bounce">
+                  <span className="absolute -top-1.5 -right-1 bg-rose-500 text-white font-black text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.2 sm:py-0.5 rounded-full uppercase tracking-tight shadow-md animate-bounce">
                     Tap!
                   </span>
                 )}
@@ -197,24 +200,24 @@ export function SkribblBingoCard({
             sounds.playMark();
             markNumber(currentCalledNumber);
           }}
-          className="mt-3 inline-flex items-center space-x-2 bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white font-black text-sm px-5 py-2.5 rounded-2xl shadow-[0_4px_0_#9f1239] active:translate-y-0.5 transition-all cursor-pointer animate-pulse"
+          className="mt-2.5 inline-flex items-center space-x-2 bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white font-black text-xs sm:text-sm px-4 py-2 rounded-2xl shadow-[0_3px_0_#9f1239] active:translate-y-0.5 transition-all cursor-pointer animate-pulse"
         >
           <span>👉</span>
           <span>Tap to Stamp <span className="underline font-black text-yellow-200">[{currentCalledNumber}]</span> on your card!</span>
         </button>
       )}
 
-      {/* B-I-N-G-O 3D Toy Blocks (Bright, Playful, Cheerful!) */}
-      <div className="flex items-center justify-center space-x-2.5 sm:space-x-3.5 mt-3.5">
+      {/* B-I-N-G-O 3D Toy Blocks (Clean, Compact, Playful!) */}
+      <div className="flex items-center justify-center space-x-2 sm:space-x-3 mt-2.5 sm:mt-3">
         {bingoLetters.map((item, idx) => {
           const isComplete = completedCount > idx;
           return (
             <div
               key={item.letter}
-              className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border-4 border-[#0b2c4d] flex items-center justify-center text-2xl sm:text-3xl font-black transition-all transform ${
+              className={`relative w-10 h-10 sm:w-13 sm:h-13 rounded-2xl border-3 border-[#0b2c4d] flex items-center justify-center text-xl sm:text-2xl font-black transition-all transform ${
                 isComplete
-                  ? 'text-white shadow-[0_6px_0_#072847,0_8px_16px_rgba(0,0,0,0.25)] scale-110 -translate-y-1.5 animate-pop'
-                  : 'bg-white/90 shadow-[0_3px_0_#cbd5e1] opacity-75'
+                  ? 'text-white shadow-[0_4px_0_#072847] scale-105 -translate-y-1 animate-pop'
+                  : 'bg-white/90 shadow-[0_2px_0_#cbd5e1] opacity-75'
               }`}
               style={{
                 backgroundColor: isComplete ? item.color : '#ffffff',
@@ -223,7 +226,7 @@ export function SkribblBingoCard({
             >
               <span className="drop-shadow-sm">{item.letter}</span>
               {isComplete && (
-                <span className="absolute -top-2.5 -right-2 text-sm select-none animate-bounce">
+                <span className="absolute -top-2 -right-1 text-xs select-none animate-bounce">
                   ⭐
                 </span>
               )}
@@ -233,7 +236,7 @@ export function SkribblBingoCard({
       </div>
 
       {/* Lines Completed Tracker Banner */}
-      <div className="text-xs font-black text-[#072847] mt-3 tracking-wide uppercase flex items-center justify-center space-x-2 bg-white/95 px-5 py-2 rounded-full border-2 border-[#0b2c4d] shadow-[0_3px_0_#072847]">
+      <div className="text-[11px] sm:text-xs font-black text-[#072847] mt-2 tracking-wide uppercase flex items-center justify-center space-x-1.5 bg-white/95 px-4 py-1.5 rounded-full border-2 border-[#0b2c4d] shadow-[0_2px_0_#072847]">
         <span>🏆</span>
         <span>{completedCount} of 5 Lines Completed {completedCount >= 4 ? '🔥 MATCH POINT!' : ''}</span>
         <span>🎉</span>

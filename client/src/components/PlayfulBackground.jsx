@@ -62,30 +62,34 @@ export function PlayfulBackground() {
       <div className="absolute bottom-[-10%] left-[25%] w-[550px] h-[550px] bg-cyan-300/30 rounded-full blur-[100px] animate-orb-3" />
       <div className="absolute top-[45%] left-[-8%] w-[450px] h-[450px] bg-amber-400/20 rounded-full blur-[90px] animate-orb-1" />
 
-      {/* 3. Floating 3D Bingo Balls drifting safely at screen edges */}
-      <BingoBall number={7} color="#fbbf24" top="8%" left="2%" size={58} animClass="animate-ball-1" delay="0s" opacity={0.85} />
-      <BingoBall number={21} color="#f97316" top="38%" right="2%" size={52} animClass="animate-ball-2" delay="1.5s" opacity={0.8} />
-      <BingoBall number={3} color="#38bdf8" top="68%" left="2%" size={54} animClass="animate-ball-3" delay="2.2s" opacity={0.8} />
-      <BingoBall number={15} color="#22c55e" top="84%" right="2%" size={50} animClass="animate-ball-1" delay="3s" opacity={0.85} />
-      <BingoBall number={9} color="#f59e0b" top="14%" right="1.5%" size={44} animClass="animate-ball-2" delay="0.5s" opacity={0.75} />
-      <BingoBall number={18} color="#a855f7" bottom="8%" left="1.5%" size={48} animClass="animate-ball-3" delay="2s" opacity={0.75} />
+      {/* 3. Floating 3D Bingo Balls drifting safely at screen edges (hidden on mobile to keep screen clean & uncluttered) */}
+      <div className="hidden sm:block">
+        <BingoBall number={7} color="#fbbf24" top="8%" left="2%" size={58} animClass="animate-ball-1" delay="0s" opacity={0.85} />
+        <BingoBall number={21} color="#f97316" top="38%" right="2%" size={52} animClass="animate-ball-2" delay="1.5s" opacity={0.8} />
+        <BingoBall number={3} color="#38bdf8" top="68%" left="2%" size={54} animClass="animate-ball-3" delay="2.2s" opacity={0.8} />
+        <BingoBall number={15} color="#22c55e" top="84%" right="2%" size={50} animClass="animate-ball-1" delay="3s" opacity={0.85} />
+        <BingoBall number={9} color="#f59e0b" top="14%" right="1.5%" size={44} animClass="animate-ball-2" delay="0.5s" opacity={0.75} />
+        <BingoBall number={18} color="#a855f7" bottom="8%" left="1.5%" size={48} animClass="animate-ball-3" delay="2s" opacity={0.75} />
+      </div>
 
-      {/* 4. Playful Cartoon Doodles */}
-      {DOODLES.map((d, idx) => (
-        <span
-          key={idx}
-          className={`absolute ${d.size} animate-gentle-float filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)] opacity-85`}
-          style={{
-            top: d.top,
-            left: d.left,
-            right: d.right,
-            animationDelay: d.delay,
-            animationDuration: d.dur,
-          }}
-        >
-          {d.emoji}
-        </span>
-      ))}
+      {/* 4. Playful Cartoon Doodles (hidden on small mobile to avoid clutter) */}
+      <div className="hidden sm:block">
+        {DOODLES.map((d, idx) => (
+          <span
+            key={idx}
+            className={`absolute ${d.size} animate-gentle-float filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)] opacity-85`}
+            style={{
+              top: d.top,
+              left: d.left,
+              right: d.right,
+              animationDelay: d.delay,
+              animationDuration: d.dur,
+            }}
+          >
+            {d.emoji}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }

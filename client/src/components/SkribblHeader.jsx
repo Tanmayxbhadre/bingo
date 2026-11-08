@@ -41,16 +41,16 @@ export function SkribblHeader() {
   const currentCalled = roomState?.currentCalledNumber;
 
   return (
-    <header className="w-full bg-gradient-to-r from-[#005fb8] via-[#0284c7] to-[#005fb8] border-b-4 border-[#072b4d] px-3 py-2 text-white shadow-[0_4px_12px_rgba(7,43,77,0.35)]">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2">
+    <header className="w-full bg-gradient-to-r from-[#005fb8] via-[#0284c7] to-[#005fb8] border-b-4 border-[#072b4d] px-2.5 sm:px-3 py-1.5 sm:py-2 text-white shadow-[0_4px_12px_rgba(7,43,77,0.35)]">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-1.5 sm:gap-2">
         {/* Left: Logo & Room Code */}
-        <div className="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-start">
+        <div className="flex items-center space-x-2 sm:space-x-3 w-full md:w-auto justify-between md:justify-start">
           <SkribblLogo size="small" />
 
           {roomState && (
             <button
               onClick={handleCopy}
-              className="flex items-center space-x-1.5 bg-white/20 hover:bg-white/30 border-2 border-white/40 px-2.5 py-1 rounded-xl text-xs font-bold transition-all active:scale-95 shadow-sm"
+              className="flex items-center space-x-1.5 bg-white/20 hover:bg-white/30 border-2 border-white/40 px-2 py-0.5 sm:py-1 rounded-xl text-xs font-bold transition-all active:scale-95 shadow-sm"
               title="Copy Room Code"
             >
               <span className="text-white/80">Room:</span>
@@ -79,10 +79,10 @@ export function SkribblHeader() {
 
         {/* Center: Clean skribbl Turn Clock & Status */}
         {isPlaying && (
-          <div className="flex items-center space-x-2.5 w-full md:w-auto justify-center">
+          <div className="flex items-center space-x-2 w-full md:w-auto justify-center">
             {/* Countdown Clock */}
-            <div className="flex items-center space-x-1.5 bg-white text-[#072847] border-2 border-[#072847] px-3.5 py-1.5 rounded-xl font-black text-sm shadow-[0_2px_0_#072847]">
-              <Clock className="w-4 h-4 text-[#ea580c]" />
+            <div className="flex items-center space-x-1.5 bg-white text-[#072847] border-2 border-[#072847] px-2.5 sm:px-3.5 py-0.5 sm:py-1 rounded-xl font-black text-xs sm:text-sm shadow-[0_2px_0_#072847]">
+              <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#ea580c]" />
               <span className={turnTime <= 10 ? 'text-rose-600 animate-pulse font-extrabold' : ''}>
                 {turnTime}s
               </span>
@@ -90,7 +90,7 @@ export function SkribblHeader() {
 
             {/* Concise Status Pill */}
             <div
-              className={`px-3.5 py-1.5 rounded-xl border-2 text-xs font-black text-center shadow-[0_2px_0_rgba(0,0,0,0.2)] flex items-center space-x-1.5 ${
+              className={`px-3 py-0.5 sm:py-1 rounded-xl border-2 text-xs font-black text-center shadow-[0_2px_0_rgba(0,0,0,0.2)] flex items-center space-x-1.5 ${
                 isMyTurn
                   ? 'bg-gradient-to-r from-emerald-400 to-green-500 text-white border-emerald-700 animate-pulse'
                   : currentCalled

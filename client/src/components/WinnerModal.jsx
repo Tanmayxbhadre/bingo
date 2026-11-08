@@ -69,8 +69,10 @@ export function WinnerModal({ winner }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-pop select-none">
       <div
-        className={`relative border-4 border-[#0b2c4d] p-6 sm:p-7 rounded-3xl max-w-sm w-full text-center shadow-[0_12px_0_#08233d] transition-all ${
-          isMe ? 'bg-white' : 'bg-[#fcfdfe]'
+        className={`relative border-4 border-[#0b2c4d] p-6 sm:p-7 rounded-[32px] max-w-sm w-full text-center shadow-[0_12px_0_#072847,0_25px_40px_rgba(0,0,0,0.35)] transition-all ${
+          isMe
+            ? 'bg-gradient-to-b from-white via-white to-emerald-50/50'
+            : 'bg-gradient-to-b from-white via-white to-rose-50/50'
         }`}
       >
         {/* Top Floating Badge */}
@@ -79,8 +81,8 @@ export function WinnerModal({ winner }) {
             <Trophy className="w-8 h-8 fill-yellow-950" />
           </div>
         ) : (
-          <div className="absolute -top-7 left-1/2 transform -translate-x-1/2 bg-slate-200 text-slate-700 p-3.5 rounded-full border-4 border-[#0b2c4d] shadow-lg">
-            <Frown className="w-8 h-8 text-slate-600 stroke-[2.5]" />
+          <div className="absolute -top-7 left-1/2 transform -translate-x-1/2 bg-rose-200 text-rose-800 p-3.5 rounded-full border-4 border-[#0b2c4d] shadow-lg">
+            <Frown className="w-8 h-8 text-rose-700 stroke-[2.5]" />
           </div>
         )}
 
