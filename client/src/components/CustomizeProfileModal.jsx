@@ -16,13 +16,9 @@ export function CustomizeProfileModal({ isOpen, onClose }) {
 
   const handleRandomize = () => {
     sounds.playPop();
-    const adjectives = ['Super', 'Lucky', 'Speedy', 'Cool', 'Happy', 'Brave', 'Golden', 'Cozy'];
-    const nouns = ['Player', 'Panda', 'Tiger', 'Artist', 'Star', 'Hero', 'Gamer', 'Doodler'];
-    const randomName = `${adjectives[Math.floor(Math.random() * adjectives.length)]}${nouns[Math.floor(Math.random() * nouns.length)]}`;
     const randomAvatarIdx = Math.floor(Math.random() * AVATARS.length);
     const randomColor = SKRIBBL_COLORS[Math.floor(Math.random() * SKRIBBL_COLORS.length)];
 
-    setInputName(randomName);
     setCurrentAvatarIdx(randomAvatarIdx);
     setCurrentColor(randomColor);
   };
