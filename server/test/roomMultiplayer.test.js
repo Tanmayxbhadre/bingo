@@ -197,6 +197,37 @@ describe('Turn-Based Multiplayer Bingo (skribbl.io style)', () => {
     expect(res.winner.name).toBe('Alice');
     expect(room.status).toBe(ROOM_STATUS.GAME_OVER);
 
+    // Verify game over cleans up active turn pointers
+    const publicState = room.toPublicState('alice-token');
+    expect(publicState.turnPlayerSessionToken).toBeNull();
+    expect(publicState.currentCalledNumber).toBeNull();
+
+    room.destroy();
+  });
+
+  it('allows players to update profile and character in lobby', () => {
+    const manager = new RoomManager();
+    const room = manager.createRoom({
+      socketId: 'sock-1',
+      sessionToken: 'alice-token',
+      name: 'Alice',
+      avatar: 'cool',
+    });
+
+    const updated = room.updatePlayerProfile('alice-token', {
+      name: 'SuperAlice',
+      avatar: 'nerd',
+      color: '#0084ff',
+    });
+
+    expect(updated.name).toBe('SuperAlice');
+    expect(updated.avatar).toBe('nerd');
+    expect(updated.color).toBe('#0084ff');
+
+    const publicState = room.toPublicState('alice-token');
+    const me = publicState.players.find((p) => p.sessionToken === 'alice-token');
+    expect(me.name).toBe('SuperAlice');
+
     room.destroy();
   });
 });
