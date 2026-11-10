@@ -40,6 +40,18 @@ export function HomePage() {
     fetchPublicRooms();
   }, []);
 
+  // Global keyboard shortcuts (M to mute)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.key === 'm' || e.key === 'M') {
+        toggleSound();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [toggleSound]);
+
   const handleRandomize = () => {
     sounds.playPop();
     const randomAvatarIdx = Math.floor(Math.random() * AVATARS.length);
@@ -286,6 +298,11 @@ export function HomePage() {
           <span className="text-[10px] text-white/40">
             Bingo.io v1.2 — Live 5x5 skribbl-style multiplayer Bingo
           </span>
+          <div className="flex items-center space-x-2 text-[10px] text-white/50 pt-0.5">
+            <button onClick={() => navigate('/privacy')} className="hover:text-white hover:underline cursor-pointer">Privacy Policy</button>
+            <span>•</span>
+            <button onClick={() => navigate('/terms')} className="hover:text-white hover:underline cursor-pointer">Terms of Service</button>
+          </div>
         </footer>
       </div>
 
