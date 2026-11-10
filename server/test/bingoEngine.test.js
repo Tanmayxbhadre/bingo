@@ -157,4 +157,17 @@ describe('BingoEngine - Winning Detection (12 possible lines, 5 needed to win)',
     expect(res.completedCount).toBeGreaterThanOrEqual(5);
     expect(res.isWinner).toBe(true);
   });
+
+  it('correctly calculates 12 maximum lines and 25 winning cells when fully marked', () => {
+    const card = createTestCard();
+    for (let i = 0; i < 25; i++) {
+      card[i].marked = true;
+    }
+
+    const res = BingoEngine.evaluateLines(card);
+    expect(res.completedCount).toBe(12);
+    expect(res.completedLines).toHaveLength(12);
+    expect(res.winningCellIndices).toHaveLength(25);
+    expect(res.isWinner).toBe(true);
+  });
 });
