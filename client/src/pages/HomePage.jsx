@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Play, PlusCircle, ArrowRight, Globe, HelpCircle, Sparkles, Volume2, VolumeX } from 'lucide-react';
+import { Play, PlusCircle, ArrowRight, Globe, HelpCircle, Sparkles, Volume2, VolumeX, Share2 } from 'lucide-react';
 import { useGame } from '../context/GameContext.jsx';
 import { SkribblLogo } from '../components/SkribblLogo.jsx';
 import { SkribblAvatarCustomizer } from '../components/SkribblAvatarCustomizer.jsx';
@@ -258,8 +258,34 @@ export function HomePage() {
         </div>
 
         {/* Footer */}
-        <footer className="text-center text-[10px] text-white/50 mt-2">
-          Bingo.io — skribbl.io style multiplayer Bingo
+        <footer className="text-center text-xs text-white/70 mt-3 flex flex-col items-center space-y-1.5">
+          <div className="flex items-center space-x-3 text-[11px] font-bold">
+            <button
+              onClick={() => {
+                sounds.playPop();
+                const shareData = {
+                  title: 'Bingo.io - Live Multiplayer Bingo',
+                  text: 'Play live 5x5 Bingo online with friends! No install required.',
+                  url: window.location.origin,
+                };
+                if (navigator.share) {
+                  navigator.share(shareData).catch(() => {});
+                } else {
+                  navigator.clipboard.writeText(window.location.origin);
+                  alert('Game link copied to clipboard!');
+                }
+              }}
+              className="bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full text-white flex items-center space-x-1 cursor-pointer transition-all border border-white/20"
+            >
+              <Share2 className="w-3 h-3" />
+              <span>Share Game</span>
+            </button>
+            <span className="text-white/40">•</span>
+            <span>📱 Works in browser & mobile</span>
+          </div>
+          <span className="text-[10px] text-white/40">
+            Bingo.io v1.2 — Live 5x5 skribbl-style multiplayer Bingo
+          </span>
         </footer>
       </div>
 

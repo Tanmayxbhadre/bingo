@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import confetti from 'canvas-confetti';
-import { Trophy, RotateCcw, Home, Eye, Award, Frown, Sparkles } from 'lucide-react';
+import { Trophy, RotateCcw, Home, Eye, Award, Frown, Sparkles, Share2 } from 'lucide-react';
 import { useGame } from '../context/GameContext.jsx';
 import { CharacterAvatar } from './CharacterAvatar.jsx';
 import { sounds } from '../services/soundEffects.js';
@@ -10,10 +10,35 @@ export function WinnerModal({ winner }) {
   const navigate = useNavigate();
   const { roomState, playAgain, leaveRoom, sessionToken } = useGame();
   const [minimized, setMinimized] = useState(false);
+  const [copiedShare, setCopiedShare] = useState(false);
 
   const isMe = winner?.sessionToken === sessionToken;
   const myLines = roomState?.myCompletedCount || 0;
   const numbersCalledCount = roomState?.calledNumbers?.length || 0;
+
+  const handleShare = async () => {
+    sounds.playPop();
+    const shareText = isMe
+      ? `🏆 I won the match in Bingo.io with 5 completed lines! Can you beat me? Play now: ${window.location.origin}`
+      : `🎮 Playing Bingo.io live multiplayer with friends! Join the fun: ${window.location.origin}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Bingo.io - Multiplayer Bingo',
+          text: shareText,
+          url: window.location.origin,
+        });
+        return;
+      } catch (err) {}
+    }
+
+    try {
+      await navigator.clipboard.writeText(shareText);
+      setCopiedShare(true);
+      setTimeout(() => setCopiedShare(false), 2000);
+    } catch (err) {}
+  };
 
   useEffect(() => {
     if (isMe) {
@@ -173,6 +198,15 @@ export function WinnerModal({ winner }) {
 
         {/* Action Controls */}
         <div className="flex flex-col gap-2 mt-3.5">
+          {/* Share Victory / Result Button */}
+          <button
+            onClick={handleShare}
+            className="w-full bg-[#0084ff] hover:bg-[#0070d6] text-white py-2.5 rounded-xl text-xs font-black flex items-center justify-center space-x-1.5 cursor-pointer shadow-[0_2.5px_0_#072b4d] active:translate-y-0.5 transition-all"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+            <span>{copiedShare ? 'Copied Link to Clipboard! 📋' : 'Share Result with Friends 🚀'}</span>
+          </button>
+
           {roomState?.isHost ? (
             <button
               onClick={() => {

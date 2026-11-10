@@ -56,12 +56,19 @@ export function GameProvider({ children }) {
   }, [roomState?.roomCode]);
 
   useEffect(() => {
-    // In local dev on Vite port 5173, connect directly to backend on 4000
+    // In local dev on Vite, connect directly to backend on 4000
+    // When embedded in iframes or portals (itch.io, CrazyGames), connect to live Render backend
+    const isLocalhost =
+      typeof window !== 'undefined' &&
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
     const serverUrl =
       import.meta.env.VITE_SERVER_URL ||
-      (typeof window !== 'undefined' && window.location.port === '5173'
+      (isLocalhost
         ? 'http://localhost:4000'
-        : window.location.origin);
+        : (typeof window !== 'undefined' && window.location.origin.includes('onrender.com')
+            ? window.location.origin
+            : 'https://bingo-jo21.onrender.com'));
 
     const socket = io(serverUrl, {
       transports: ['websocket', 'polling'],

@@ -30,8 +30,18 @@ class SoundEffects {
     return this.isMuted;
   }
 
+  // Mobile haptic vibration feedback
+  haptic(pattern = 15) {
+    if (typeof window !== 'undefined' && typeof navigator !== 'undefined' && navigator.vibrate) {
+      try {
+        navigator.vibrate(pattern);
+      } catch (e) {}
+    }
+  }
+
   // Your turn alert sound (cheerful two-tone chime)
   playTurnAlert() {
+    this.haptic([30, 40, 30]);
     if (this.isMuted) return;
     this.init();
     if (!this.ctx) return;
@@ -113,6 +123,7 @@ class SoundEffects {
 
   // Cell automatically marked
   playMark() {
+    this.haptic(15);
     if (this.isMuted) return;
     this.init();
     if (!this.ctx) return;
@@ -163,6 +174,7 @@ class SoundEffects {
 
   // Winning Bingo fanfare
   playWin() {
+    this.haptic([80, 40, 80, 40, 160]);
     if (this.isMuted) return;
     this.init();
     if (!this.ctx) return;
@@ -191,6 +203,7 @@ class SoundEffects {
 
   // Playful Emoji Bubble Reaction Pop
   playReaction() {
+    this.haptic(10);
     if (this.isMuted) return;
     this.init();
     if (!this.ctx) return;
