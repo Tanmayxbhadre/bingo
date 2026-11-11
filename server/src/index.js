@@ -4,6 +4,7 @@ import { Server } from 'socket.io';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { setupSocketHandlers } from './socket/socketHandler.js';
 
@@ -52,6 +53,33 @@ setupSocketHandlers(io);
 // In production, serve the built client if dist exists
 const clientDistPath = path.resolve(__dirname, '../../client/dist');
 app.use(express.static(clientDistPath));
+
+// Dynamic OpenGraph previews for shared room links (/room/:roomCode)
+app.get('/room/:roomCode', (req, res, next) => {
+  const roomCode = (req.params.roomCode || '').toUpperCase().trim();
+  const indexPath = path.join(clientDistPath, 'index.html');
+
+  if (fs.existsSync(indexPath)) {
+    try {
+      let html = fs.readFileSync(indexPath, 'utf8');
+      const dynamicTitle = `🎮 Join Bingo Room #${roomCode} on Bingo.io!`;
+      const dynamicDesc = `I'm waiting in room #${roomCode}! Tap here to join my live 5x5 Bingo match. No app install needed!`;
+
+      html = html
+        .replace(/<title>.*?<\/title>/, `<title>${dynamicTitle}</title>`)
+        .replace(/<meta property="og:title" content=".*?" \/>/, `<meta property="og:title" content="${dynamicTitle}" />`)
+        .replace(/<meta property="og:description" content=".*?" \/>/, `<meta property="og:description" content="${dynamicDesc}" />`)
+        .replace(/<meta name="twitter:title" content=".*?" \/>/, `<meta name="twitter:title" content="${dynamicTitle}" />`)
+        .replace(/<meta name="twitter:description" content=".*?" \/>/, `<meta name="twitter:description" content="${dynamicDesc}" />`);
+
+      return res.status(200).send(html);
+    } catch (e) {
+      return next();
+    }
+  }
+  next();
+});
+
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/health') || req.path.startsWith('/socket.io')) {
     return next();

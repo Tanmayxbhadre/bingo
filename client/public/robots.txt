@@ -1,3 +1,4 @@
 User-agent: *
 Allow: /
 Sitemap: https://bingo-jo21.onrender.com/sitemap.xml
+

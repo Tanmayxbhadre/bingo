@@ -68,6 +68,39 @@ export function RoomPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleShare = async () => {
+    sounds.playPop();
+    const currentCode = roomCode || roomState?.roomCode;
+    const url = `${window.location.origin}/room/${currentCode}`;
+    const shareData = {
+      title: `Bingo.io - Join Room #${currentCode}`,
+      text: `🎮 Join my live 5x5 Bingo room #${currentCode} on Bingo.io! Tap to play:`,
+      url,
+    };
+
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (e) {
+        // user dismissed dialog or unsupported
+      }
+    }
+
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleWhatsAppShare = () => {
+    sounds.playPop();
+    const currentCode = roomCode || roomState?.roomCode;
+    const url = `${window.location.origin}/room/${currentCode}`;
+    const text = `🎮 Join my live 5x5 Bingo room *#${currentCode}* on Bingo.io! Tap to play with me: ${url}`;
+    const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+    window.open(waUrl, '_blank', 'noopener,noreferrer');
+  };
+
   const handleStartGame = async () => {
     try {
       setIsStarting(true);
@@ -149,16 +182,30 @@ export function RoomPage() {
                 </button>
               </div>
 
-              <div className="flex items-center justify-center space-x-3 text-xs font-bold text-slate-600">
+              {/* Share & Invite Action Bar */}
+              <div className="flex flex-wrap items-center justify-center gap-2 mb-2">
                 <button
-                  onClick={handleCopyLink}
-                  className="skribbl-btn-blue px-4 py-2 rounded-xl text-xs flex items-center space-x-1.5 cursor-pointer"
+                  type="button"
+                  onClick={handleShare}
+                  className="skribbl-btn-blue px-3.5 py-2 rounded-xl text-xs flex items-center space-x-1.5 cursor-pointer shadow-sm"
+                  title="Share room invitation"
                 >
                   <Share2 className="w-3.5 h-3.5 stroke-[2.5]" />
-                  <span>{copied ? 'Copied Link!' : 'Copy Invite Link'}</span>
+                  <span>{copied ? 'Copied Link! 📋' : 'Share Link'}</span>
                 </button>
-                <span className="bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
-                  Turn Timer: <span className="text-[#0284c7] font-black">{roomState.turnDurationSec}s</span>
+
+                <button
+                  type="button"
+                  onClick={handleWhatsAppShare}
+                  className="bg-[#25D366] hover:bg-[#20bd5a] text-white px-3.5 py-2 rounded-xl text-xs font-black flex items-center space-x-1.5 cursor-pointer border-2 border-[#128C7E] shadow-[0_2.5px_0_#075e54] active:translate-y-0.5 transition-all"
+                  title="Invite friends on WhatsApp"
+                >
+                  <span>💬</span>
+                  <span>WhatsApp</span>
+                </button>
+
+                <span className="bg-slate-100 px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600">
+                  Timer: <span className="text-[#0284c7] font-black">{roomState.turnDurationSec}s</span>
                 </span>
               </div>
             </div>

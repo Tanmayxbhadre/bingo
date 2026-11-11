@@ -32,3 +32,4 @@ jobs:
 
       - name: Build Vite Client
         run: npm --workspace=client run build
+

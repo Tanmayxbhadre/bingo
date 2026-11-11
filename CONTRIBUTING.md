@@ -39,3 +39,4 @@ Thank you for your interest in contributing to **Bingo.io**! We welcome bug repo
 - Keep components modular and reusable under `client/src/components/`.
 - Ensure authoritative game rules remain verified on the server in `server/src/game/`.
 - Preserve the colorful skribbl.io playful styling.
+
