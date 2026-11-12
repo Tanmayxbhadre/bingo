@@ -4,6 +4,7 @@ import { Play, PlusCircle, ArrowRight, Globe, HelpCircle, Sparkles, Volume2, Vol
 import { useGame } from '../context/GameContext.jsx';
 import { SkribblLogo } from '../components/SkribblLogo.jsx';
 import { SkribblAvatarCustomizer } from '../components/SkribblAvatarCustomizer.jsx';
+import { PlayerStatsCard } from '../components/PlayerStatsCard.jsx';
 import { AVATARS, SKRIBBL_COLORS } from '@shared/constants/gameConstants.js';
 import { sounds } from '../services/soundEffects.js';
 
@@ -259,6 +260,11 @@ export function HomePage() {
               </button>
             </div>
           </div>
+        </div>
+
+        {/* Player Stats & Win Streak Widget */}
+        <div className="w-full mt-3">
+          <PlayerStatsCard />
         </div>
 
         {/* Compact How To Play Pill */}

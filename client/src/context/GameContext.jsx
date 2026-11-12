@@ -5,6 +5,15 @@ import { sounds } from '../services/soundEffects.js';
 
 const GameContext = createContext(null);
 
+export function getRankInfo(wins = 0) {
+  if (wins >= 20) return { title: 'Grandmaster', badge: '👑', color: 'text-amber-500', nextAt: null };
+  if (wins >= 10) return { title: 'Champion', badge: '🏆', color: 'text-yellow-600', nextAt: 20 };
+  if (wins >= 6) return { title: 'Bingo Star', badge: '⭐', color: 'text-sky-500', nextAt: 10 };
+  if (wins >= 3) return { title: 'Bingo Scout', badge: '🎯', color: 'text-emerald-600', nextAt: 6 };
+  if (wins >= 1) return { title: 'Apprentice', badge: '🎖️', color: 'text-indigo-600', nextAt: 3 };
+  return { title: 'Rookie', badge: '🥉', color: 'text-slate-600', nextAt: 1 };
+}
+
 export function GameProvider({ children }) {
   const [sessionToken, setSessionToken] = useState(() => {
     let token = sessionStorage.getItem('bingo_session_token');
@@ -22,6 +31,21 @@ export function GameProvider({ children }) {
   });
   const [avatarColor, setAvatarColor] = useState(() => localStorage.getItem('bingo_avatar_color') || SKRIBBL_COLORS[0]);
 
+  // Player Career Stats & Win Streak
+  const [stats, setStats] = useState(() => {
+    try {
+      const saved = localStorage.getItem('bingo_player_stats');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return {
+      played: 0,
+      wins: 0,
+      winStreak: 0,
+      bestStreak: 0,
+      totalLines: 0,
+    };
+  });
+
   const [roomState, setRoomState] = useState(null);
   const [publicRooms, setPublicRooms] = useState([]);
   const [connected, setConnected] = useState(false);
@@ -35,6 +59,7 @@ export function GameProvider({ children }) {
 
   const socketRef = useRef(null);
   const currentRoomCodeRef = useRef(null);
+  const recordedMatchRef = useRef(null);
   const nameRef = useRef(name);
   const avatarRef = useRef(currentAvatar);
   const colorRef = useRef(avatarColor);
@@ -138,6 +163,39 @@ export function GameProvider({ children }) {
       });
       if (updatedState.turnTimeRemaining !== undefined) {
         setTurnTime(updatedState.turnTimeRemaining);
+      }
+
+      // Automatically track career stats and win streaks on match end
+      if (updatedState.winner && (updatedState.status === 'game_over' || updatedState.winner)) {
+        const matchKey = `${updatedState.roomCode}-${updatedState.winner.sessionToken}-${updatedState.calledNumbers?.length || 0}`;
+        if (recordedMatchRef.current !== matchKey) {
+          recordedMatchRef.current = matchKey;
+          const isMe = updatedState.winner.sessionToken === sessionToken;
+
+          setStats((prev) => {
+            const newPlayed = prev.played + 1;
+            const newWins = isMe ? prev.wins + 1 : prev.wins;
+            const newStreak = isMe ? prev.winStreak + 1 : 0;
+            const newBest = Math.max(prev.bestStreak, newStreak);
+            const newLines = prev.totalLines + (updatedState.myCompletedCount || 0);
+
+            const nextStats = {
+              played: newPlayed,
+              wins: newWins,
+              winStreak: newStreak,
+              bestStreak: newBest,
+              totalLines: newLines,
+            };
+            try {
+              localStorage.setItem('bingo_player_stats', JSON.stringify(nextStats));
+            } catch (e) {}
+            return nextStats;
+          });
+        }
+      } else if (updatedState.status === 'playing' || updatedState.status === 'lobby') {
+        if (!updatedState.winner) {
+          recordedMatchRef.current = null;
+        }
       }
     });
 
@@ -405,6 +463,7 @@ export function GameProvider({ children }) {
         avatarIndex,
         avatarColor,
         currentAvatar,
+        stats,
         updateProfile,
         roomState,
         publicRooms,

@@ -4,7 +4,7 @@ import { useGame } from '../context/GameContext.jsx';
 import { CharacterAvatar } from './CharacterAvatar.jsx';
 
 export function SkribblPlayerList() {
-  const { roomState, sessionToken } = useGame();
+  const { roomState, sessionToken, stats } = useGame();
   const players = roomState?.players || [];
 
   return (
@@ -62,6 +62,11 @@ export function SkribblPlayerList() {
                     {isMe && (
                       <span className="text-[9px] bg-[#0284c7] text-white font-black px-1.5 py-0.2 rounded-md flex-shrink-0">
                         YOU
+                      </span>
+                    )}
+                    {isMe && stats?.winStreak > 0 && (
+                      <span className="text-[9px] bg-gradient-to-r from-orange-400 to-amber-500 text-yellow-950 font-black px-1.5 py-0.2 rounded-md flex-shrink-0 animate-pulse border border-orange-500" title={`Current Win Streak: ${stats.winStreak}`}>
+                        🔥 {stats.winStreak}
                       </span>
                     )}
                     {p.isHost && (

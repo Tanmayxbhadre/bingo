@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import confetti from 'canvas-confetti';
-import { Trophy, RotateCcw, Home, Eye, Award, Frown, Sparkles, Share2 } from 'lucide-react';
+import { Trophy, RotateCcw, Home, Eye, Award, Frown, Sparkles, Share2, Flame } from 'lucide-react';
 import { useGame } from '../context/GameContext.jsx';
 import { CharacterAvatar } from './CharacterAvatar.jsx';
 import { sounds } from '../services/soundEffects.js';
 
 export function WinnerModal({ winner }) {
   const navigate = useNavigate();
-  const { roomState, playAgain, leaveRoom, sessionToken } = useGame();
+  const { roomState, playAgain, leaveRoom, sessionToken, stats } = useGame();
   const [minimized, setMinimized] = useState(false);
   const [copiedShare, setCopiedShare] = useState(false);
 
@@ -195,6 +195,19 @@ export function WinnerModal({ winner }) {
             </span>
           </div>
         </div>
+
+        {/* Win Streak & Career Stats Notification */}
+        {stats && (
+          <div className="bg-gradient-to-r from-orange-100 via-amber-50 to-orange-100 rounded-xl p-2 border-2 border-orange-300 text-yellow-950 flex items-center justify-between px-3 text-xs font-black my-1">
+            <div className="flex items-center space-x-1.5">
+              <Flame className={`w-4 h-4 ${isMe && stats.winStreak > 0 ? 'fill-orange-500 text-orange-500 animate-bounce' : 'text-slate-400'}`} />
+              <span>{isMe ? `🔥 ${stats.winStreak} Win Streak!` : `Best Streak: ${stats.bestStreak}`}</span>
+            </div>
+            <div className="text-[11px] font-black text-slate-700 bg-white/80 px-2 py-0.5 rounded-lg border border-orange-200">
+              {stats.wins} Career Wins 🏆
+            </div>
+          </div>
+        )}
 
         {/* Action Controls */}
         <div className="flex flex-col gap-2 mt-3.5">
