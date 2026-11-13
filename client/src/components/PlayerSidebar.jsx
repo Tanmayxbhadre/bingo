@@ -73,6 +73,7 @@ export function PlayerSidebar() {
                       <span className="font-bold text-sm leading-tight text-white">
                         {p.name}
                       </span>
+                      {p.isBot && <span className="text-[10px] bg-purple-500 text-white font-black px-1.5 py-0.2 rounded-md">BOT</span>}
                       {isMe && <span className="text-[10px] bg-yellow-400 text-yellow-950 font-black px-1.5 py-0.2 rounded-md">YOU</span>}
                       {p.isHost && (
                         <Crown className="w-3.5 h-3.5 text-yellow-300 fill-yellow-300" title="Host" />

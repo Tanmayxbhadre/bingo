@@ -59,6 +59,11 @@ export function SkribblPlayerList() {
                     <span className="font-black text-sm text-[#072847] truncate block" title={p.name}>
                       {p.name}
                     </span>
+                    {p.isBot && (
+                      <span className="text-[9px] bg-purple-600 text-white font-black px-1.5 py-0.2 rounded-md flex-shrink-0 border border-purple-800 shadow-sm" title="AI Player">
+                        🤖 BOT
+                      </span>
+                    )}
                     {isMe && (
                       <span className="text-[9px] bg-[#0284c7] text-white font-black px-1.5 py-0.2 rounded-md flex-shrink-0">
                         YOU

@@ -315,6 +315,47 @@ export function GameProvider({ children }) {
     });
   };
 
+  const createBotGame = () => {
+    return new Promise((resolve, reject) => {
+      if (!socketRef.current) return reject(new Error('Socket not connected'));
+      setError(null);
+
+      socketRef.current.emit(
+        SOCKET_EVENTS.CREATE_BOT_GAME,
+        {
+          sessionToken,
+          name: (nameRef.current || name || 'Player').trim(),
+          avatar: avatarRef.current?.id || currentAvatar.id,
+          color: colorRef.current || avatarColor,
+        },
+        (res) => {
+          if (res?.success) {
+            currentRoomCodeRef.current = res.roomCode;
+            setRoomState(res.state);
+            resolve(res);
+          } else {
+            setError(res?.error || 'Failed to start bot game');
+            reject(new Error(res?.error || 'Failed to start bot game'));
+          }
+        }
+      );
+    });
+  };
+
+  const addBot = () => {
+    return new Promise((resolve, reject) => {
+      if (!socketRef.current) return reject(new Error('Socket not connected'));
+      socketRef.current.emit(SOCKET_EVENTS.ADD_BOT, {}, (res) => {
+        if (res?.success) {
+          resolve(res);
+        } else {
+          setError(res?.error || 'Failed to add bot');
+          reject(new Error(res?.error || 'Failed to add bot'));
+        }
+      });
+    });
+  };
+
   const joinRoom = (code) => {
     return new Promise((resolve, reject) => {
       if (!socketRef.current) return reject(new Error('Socket not connected'));
@@ -477,6 +518,8 @@ export function GameProvider({ children }) {
         floatingReactions,
         sendReaction,
         createRoom,
+        createBotGame,
+        addBot,
         joinRoom,
         leaveRoom,
         startGame,

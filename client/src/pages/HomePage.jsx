@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Play, PlusCircle, ArrowRight, Globe, HelpCircle, Sparkles, Volume2, VolumeX, Share2 } from 'lucide-react';
+import { Play, PlusCircle, ArrowRight, Globe, HelpCircle, Sparkles, Volume2, VolumeX, Share2, Bot } from 'lucide-react';
 import { useGame } from '../context/GameContext.jsx';
 import { SkribblLogo } from '../components/SkribblLogo.jsx';
 import { SkribblAvatarCustomizer } from '../components/SkribblAvatarCustomizer.jsx';
@@ -15,6 +15,7 @@ export function HomePage() {
     avatarColor,
     updateProfile,
     createRoom,
+    createBotGame,
     joinRoom,
     publicRooms,
     fetchPublicRooms,
@@ -109,6 +110,23 @@ export function HomePage() {
         navigate(`/room/${res.roomCode}`);
       }
     } catch (err) {
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePlayVsBot = async () => {
+    try {
+      setIsLoading(true);
+      sounds.playPop();
+      updateProfile(inputName.trim() || 'Player', currentAvatarIdx, currentColor);
+
+      const res = await createBotGame();
+      if (res?.success) {
+        navigate(`/room/${res.roomCode}`);
+      }
+    } catch (err) {
+      console.error('Play vs bot error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -211,6 +229,16 @@ export function HomePage() {
           >
             <Play className="w-7 h-7 fill-white" />
             <span>{isLoading ? 'Entering...' : 'Play!'}</span>
+          </button>
+
+          {/* Instant Solo Play vs AI Bot Button */}
+          <button
+            onClick={handlePlayVsBot}
+            disabled={isLoading}
+            className="w-full bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-700 hover:to-indigo-800 text-white border-4 border-[#0b2c4d] shadow-[0_5px_0_#072847] active:translate-y-1 active:shadow-[0_1px_0_#072847] py-3 rounded-2xl text-base font-black flex items-center justify-center space-x-2 cursor-pointer transition-all tracking-wide"
+          >
+            <Bot className="w-5 h-5 text-yellow-300" />
+            <span>{isLoading ? 'Starting AI...' : 'Play vs AI Bot (Solo Mode)'}</span>
           </button>
 
           {/* Action Row: Create Private Room & Public Games */}

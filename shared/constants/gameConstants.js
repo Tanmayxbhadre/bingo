@@ -47,6 +47,10 @@ export const SOCKET_EVENTS = {
   // Real-time floating emoji reaction
   REACTION_EMOJI: 'reaction_emoji',
 
+  // Bot & Solo Play
+  CREATE_BOT_GAME: 'create_bot_game',
+  ADD_BOT: 'add_bot',
+
   // Profile update
   UPDATE_PROFILE: 'update_profile',
 

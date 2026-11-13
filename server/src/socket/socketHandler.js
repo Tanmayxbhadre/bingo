@@ -11,6 +11,61 @@ export function setupSocketHandlers(io) {
     }
   }
 
+  function getGameHandlers(room) {
+    const handlers = {
+      onTurnTick: (timeRemaining) => {
+        io.to(room.code).emit('turn_tick', { timeRemaining });
+      },
+      onAutoCall: (autoCallResult) => {
+        room.addSystemMessage(`⏰ Time up! Auto-called ${autoCallResult.number}!`, 'call');
+        io.to(room.code).emit(SOCKET_EVENTS.NUMBER_CALLED, {
+          number: autoCallResult.number,
+          callerSessionToken: autoCallResult.callerSessionToken,
+          callerName: autoCallResult.callerName,
+          nextTurnSessionToken: autoCallResult.nextTurnSessionToken,
+          nextTurnName: autoCallResult.nextTurnName,
+        });
+
+        // Trigger bot marking for this number
+        room.triggerBotMarking(autoCallResult.number, handlers.onBotMarked, handlers.onGameOver);
+
+        // Check if next turn belongs to bot
+        room.checkAndTriggerBotTurn(handlers.onBotCall, handlers.onGameOver);
+        broadcastRoomState(room);
+      },
+      onGameOver: (gameOverResult) => {
+        if (gameOverResult.winner) {
+          room.addSystemMessage(`🎉 BINGO! ${gameOverResult.winner.name} completed 5 lines and won the game! 🏆`, 'win');
+          io.to(room.code).emit(SOCKET_EVENTS.GAME_OVER, {
+            winner: gameOverResult.winner,
+          });
+        }
+        broadcastRoomState(room);
+      },
+      onBotCall: (botResult) => {
+        room.addSystemMessage(`🤖 ${botResult.callerName} called number ${botResult.number}! Click it on your card!`, 'call');
+        io.to(room.code).emit(SOCKET_EVENTS.NUMBER_CALLED, {
+          number: botResult.number,
+          callerSessionToken: botResult.callerSessionToken,
+          callerName: botResult.callerName,
+          nextTurnSessionToken: botResult.nextTurnSessionToken,
+          nextTurnName: botResult.nextTurnName,
+        });
+
+        // Trigger bot marking for other bots if any
+        room.triggerBotMarking(botResult.number, handlers.onBotMarked, handlers.onGameOver);
+
+        // Check if next turn is another bot
+        room.checkAndTriggerBotTurn(handlers.onBotCall, handlers.onGameOver);
+        broadcastRoomState(room);
+      },
+      onBotMarked: (botPlayer, markRes) => {
+        broadcastRoomState(room);
+      },
+    };
+    return handlers;
+  }
+
   io.on('connection', (socket) => {
     // 1. Create Room
     socket.on(SOCKET_EVENTS.CREATE_ROOM, (payload, callback) => {
@@ -116,32 +171,8 @@ export function setupSocketHandlers(io) {
         const firstPlayer = room.players.get(room.turnPlayerSessionToken);
         room.addSystemMessage('The game has started! Players take turns calling numbers. First to 5 lines wins! 🏆');
 
-        room.startGame(
-          // onTurnTick
-          (timeRemaining) => {
-            io.to(room.code).emit('turn_tick', { timeRemaining });
-          },
-          // onAutoCall
-          (autoCallResult) => {
-            room.addSystemMessage(`⏰ Time up! Auto-called ${autoCallResult.number}!`, 'call');
-            io.to(room.code).emit(SOCKET_EVENTS.NUMBER_CALLED, {
-              number: autoCallResult.number,
-              callerSessionToken: autoCallResult.callerSessionToken,
-              callerName: autoCallResult.callerName,
-            });
-            broadcastRoomState(room);
-          },
-          // onGameOver
-          (gameOverResult) => {
-            if (gameOverResult.winner) {
-              room.addSystemMessage(`🎉 BINGO! ${gameOverResult.winner.name} completed 5 lines and won the game! 🏆`, 'win');
-              io.to(room.code).emit(SOCKET_EVENTS.GAME_OVER, {
-                winner: gameOverResult.winner,
-              });
-            }
-            broadcastRoomState(room);
-          }
-        );
+        const handlers = getGameHandlers(room);
+        room.startGame(handlers);
 
         callback?.({ success: true });
         io.to(room.code).emit(SOCKET_EVENTS.START_GAME, { roomCode: room.code });
@@ -149,6 +180,74 @@ export function setupSocketHandlers(io) {
       } catch (err) {
         console.error('game_start error:', err);
         callback?.({ success: false, error: err.message });
+      }
+    });
+
+    // 4b. CREATE BOT GAME (Instant Solo Play vs AI)
+    socket.on(SOCKET_EVENTS.CREATE_BOT_GAME, (payload, callback) => {
+      try {
+        const { sessionToken, name, avatar, color } = payload || {};
+        if (!sessionToken) {
+          return callback?.({ success: false, error: 'Session token is required' });
+        }
+
+        const room = roomManager.createRoom(
+          {
+            socketId: socket.id,
+            sessionToken,
+            name: name || 'Player',
+            avatar: avatar || 'cool',
+            color: color || '#55b338',
+          },
+          { turnDurationSec: 45, maxPlayers: 2, isPublic: false }
+        );
+
+        socket.join(room.code);
+
+        // Add smart AI bot to room
+        const bot = room.addBot('BingoBot 🤖', 'robot', '#ff4757');
+        room.addSystemMessage(`🤖 Solo Practice match against ${bot.name} started! Have fun!`);
+
+        // Start game immediately
+        const handlers = getGameHandlers(room);
+        room.startGame(handlers);
+
+        const state = room.toPublicState(sessionToken);
+        callback?.({ success: true, roomCode: room.code, state });
+        io.to(room.code).emit(SOCKET_EVENTS.START_GAME, { roomCode: room.code });
+        broadcastRoomState(room);
+      } catch (err) {
+        console.error('create_bot_game error:', err);
+        callback?.({ success: false, error: err.message || 'Failed to start bot match' });
+      }
+    });
+
+    // 4c. ADD BOT TO LOBBY (Host can fill empty slot with a bot)
+    socket.on(SOCKET_EVENTS.ADD_BOT, (payload, callback) => {
+      try {
+        const record = roomManager.getRoomBySocket(socket.id);
+        if (!record || !record.room) {
+          return callback?.({ success: false, error: 'Not in a room' });
+        }
+        const { room, sessionToken } = record;
+        if (room.hostSessionToken !== sessionToken) {
+          return callback?.({ success: false, error: 'Only the host can add a bot' });
+        }
+        if (room.status !== ROOM_STATUS.LOBBY) {
+          return callback?.({ success: false, error: 'Can only add bots in lobby' });
+        }
+
+        const botNames = ['BingoBot 🤖', 'DoodleBot ⚡', 'PixelBot 🎮', 'StarBot ⭐'];
+        const existingBots = Array.from(room.players.values()).filter((p) => p.isBot).length;
+        const botName = botNames[existingBots % botNames.length];
+
+        const bot = room.addBot(botName, 'robot', '#ff4757');
+        room.addSystemMessage(`🤖 ${bot.name} joined the room!`);
+
+        callback?.({ success: true, bot });
+        broadcastRoomState(room);
+      } catch (err) {
+        callback?.({ success: false, error: err.message || 'Failed to add bot' });
       }
     });
 
@@ -181,11 +280,19 @@ export function setupSocketHandlers(io) {
           nextTurnName: result.nextTurnName,
         });
 
+        const handlers = getGameHandlers(room);
+
         if (result.isWinner) {
           room.addSystemMessage(`🎉 BINGO! ${result.winner.name} completed 5 lines and won! 🏆`, 'win');
           io.to(room.code).emit(SOCKET_EVENTS.GAME_OVER, {
             winner: result.winner,
           });
+        } else {
+          // Trigger bot marking for this called number
+          room.triggerBotMarking(number, handlers.onBotMarked, handlers.onGameOver);
+
+          // If next turn is a bot, trigger it
+          room.checkAndTriggerBotTurn(handlers.onBotCall, handlers.onGameOver);
         }
 
         callback?.({ success: true, result });
@@ -298,11 +405,22 @@ export function setupSocketHandlers(io) {
           return callback?.({ success: false, error: 'Only host can reset game' });
         }
 
+        const hasBots = Array.from(room.players.values()).some((p) => p.isBot);
         room.resetForNewGame();
-        room.addSystemMessage('New round ready! Host can start when everyone is ready.');
-        callback?.({ success: true });
-        io.to(room.code).emit(SOCKET_EVENTS.START_GAME, { roomCode: room.code });
-        broadcastRoomState(room);
+
+        if (hasBots && room.players.size <= 2) {
+          // Instant rematch against bot!
+          const handlers = getGameHandlers(room);
+          room.startGame(handlers);
+          room.addSystemMessage('Rematch started! Good luck! 🤖⚡');
+          callback?.({ success: true });
+          io.to(room.code).emit(SOCKET_EVENTS.START_GAME, { roomCode: room.code });
+          broadcastRoomState(room);
+        } else {
+          room.addSystemMessage('New round ready! Host can start when everyone is ready.');
+          callback?.({ success: true });
+          broadcastRoomState(room);
+        }
       } catch (err) {
         callback?.({ success: false, error: err.message });
       }

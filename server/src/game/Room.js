@@ -25,6 +25,8 @@ export class Room {
     this.turnTimeRemaining = this.turnDurationSec;
     this.turnTimer = null;
     this.turnInterval = null;
+    this.botTurnTimeout = null;
+    this.botMarkTimeouts = [];
 
     // Numbers history
     this.calledNumbers = [];
@@ -81,6 +83,38 @@ export class Room {
 
     this.players.set(sessionToken, player);
     return player;
+  }
+
+  addBot(name = 'BingoBot 🤖', avatar = 'robot', color = '#ff4757') {
+    if (this.players.size >= this.maxPlayers) {
+      throw new Error('Room is full');
+    }
+
+    const botToken = 'bot_' + Math.random().toString(36).substring(2, 9);
+    const card = this.status === ROOM_STATUS.LOBBY ? BingoEngine.generateCard() : null;
+
+    const botPlayer = {
+      sessionToken: botToken,
+      socketId: null,
+      name: name || 'BingoBot 🤖',
+      avatar: avatar || 'robot',
+      color: color || '#ff4757',
+      isHost: false,
+      isSpectator: false,
+      isOnline: true,
+      isBot: true,
+      card,
+      completedLines: [],
+      completedCount: 0,
+      winningCells: [],
+      isWinner: false,
+      score: 0,
+      disconnectTimer: null,
+      joinedAt: Date.now(),
+    };
+
+    this.players.set(botToken, botPlayer);
+    return botPlayer;
   }
 
   updatePlayerProfile(sessionToken, { name, avatar, color }) {
@@ -160,8 +194,16 @@ export class Room {
     }
   }
 
-  startGame(onTurnTick, onAutoCall, onGameOver) {
+  startGame(onTurnTickOrOptions, onAutoCall, onGameOver, onBotCall) {
     if (this.status === ROOM_STATUS.PLAYING) return;
+
+    let onTurnTick = onTurnTickOrOptions;
+    if (typeof onTurnTickOrOptions === 'object' && onTurnTickOrOptions !== null) {
+      onTurnTick = onTurnTickOrOptions.onTurnTick;
+      onAutoCall = onTurnTickOrOptions.onAutoCall;
+      onGameOver = onTurnTickOrOptions.onGameOver;
+      onBotCall = onTurnTickOrOptions.onBotCall;
+    }
 
     // Reset game state
     this.calledNumbers = [];
@@ -196,10 +238,11 @@ export class Room {
 
     this.currentTurnIndex = 0;
     this.turnPlayerSessionToken = this.turnOrder[0];
-    this.startTurnTimer(onTurnTick, onAutoCall, onGameOver);
+    this.startTurnTimer(onTurnTick, onAutoCall, onGameOver, onBotCall);
+    this.checkAndTriggerBotTurn(onBotCall, onGameOver);
   }
 
-  startTurnTimer(onTurnTick, onAutoCall, onGameOver) {
+  startTurnTimer(onTurnTick, onAutoCall, onGameOver, onBotCall) {
     this.clearTurnTimers();
     this.turnTimeRemaining = this.turnDurationSec;
 
@@ -210,7 +253,7 @@ export class Room {
       if (this.turnTimeRemaining <= 0) {
         this.clearTurnTimers();
         // Time expired! Auto-call a number on active player's behalf
-        this.handleTurnTimeout(onAutoCall, onGameOver);
+        this.handleTurnTimeout(onAutoCall, onGameOver, onBotCall);
       }
     }, 1000);
   }
@@ -224,9 +267,126 @@ export class Room {
       clearTimeout(this.turnTimer);
       this.turnTimer = null;
     }
+    if (this.botTurnTimeout) {
+      clearTimeout(this.botTurnTimeout);
+      this.botTurnTimeout = null;
+    }
+    for (const t of this.botMarkTimeouts) {
+      clearTimeout(t);
+    }
+    this.botMarkTimeouts = [];
   }
 
-  handleTurnTimeout(onAutoCall, onGameOver) {
+  /**
+   * Smart AI decision engine to pick the best number to call
+   */
+  pickSmartBotNumber(botPlayer) {
+    if (!botPlayer || !botPlayer.card) return null;
+
+    const lineDefs = BingoEngine.getLineDefinitions();
+    const candidateWeights = new Map();
+
+    // Collect all uncalled numbers on bot's card
+    const uncalledNumbers = botPlayer.card
+      .filter((c) => !c.marked && !this.calledNumbersSet.has(c.number))
+      .map((c) => c.number);
+
+    if (uncalledNumbers.length === 0) {
+      for (let i = GAME_CONFIG.MIN_NUMBER; i <= GAME_CONFIG.MAX_NUMBER; i++) {
+        if (!this.calledNumbersSet.has(i)) return i;
+      }
+      return null;
+    }
+
+    // Default weight
+    uncalledNumbers.forEach((n) => candidateWeights.set(n, 10));
+
+    // Evaluate each line for urgency
+    for (const line of lineDefs) {
+      const lineCells = line.cells.map((idx) => botPlayer.card[idx]);
+      const markedCount = lineCells.filter((c) => c && c.marked).length;
+      const uncalledCellsInLine = lineCells.filter(
+        (c) => c && !c.marked && !this.calledNumbersSet.has(c.number)
+      );
+
+      let weight = 0;
+      if (markedCount === 4) weight = 250; // 1 away from line completion!
+      else if (markedCount === 3) weight = 90;
+      else if (markedCount === 2) weight = 35;
+      else if (markedCount === 1) weight = 15;
+
+      for (const cell of uncalledCellsInLine) {
+        candidateWeights.set(cell.number, (candidateWeights.get(cell.number) || 0) + weight);
+      }
+    }
+
+    // Sort candidates descending by weight
+    uncalledNumbers.sort((a, b) => (candidateWeights.get(b) || 0) - (candidateWeights.get(a) || 0));
+
+    // 85% pick the optimal strategic move, 15% pick one of top 3 for realistic play
+    if (Math.random() < 0.85 || uncalledNumbers.length <= 1) {
+      return uncalledNumbers[0];
+    }
+    const topChoices = uncalledNumbers.slice(0, Math.min(3, uncalledNumbers.length));
+    return topChoices[Math.floor(Math.random() * topChoices.length)];
+  }
+
+  /**
+   * Executes bot's turn with human-like thinking delay
+   */
+  checkAndTriggerBotTurn(onBotCall, onGameOver) {
+    if (this.status !== ROOM_STATUS.PLAYING) return;
+    if (this.botTurnTimeout) {
+      clearTimeout(this.botTurnTimeout);
+      this.botTurnTimeout = null;
+    }
+
+    const activePlayer = this.players.get(this.turnPlayerSessionToken);
+    if (!activePlayer || !activePlayer.isBot) return;
+
+    // Realistic human-like delay (1.2 to 2.2 seconds)
+    const thinkingDelay = 1200 + Math.floor(Math.random() * 1000);
+
+    this.botTurnTimeout = setTimeout(() => {
+      if (this.status !== ROOM_STATUS.PLAYING) return;
+      if (this.turnPlayerSessionToken !== activePlayer.sessionToken) return;
+
+      const numberToCall = this.pickSmartBotNumber(activePlayer);
+      if (numberToCall) {
+        const result = this.callNumber(activePlayer.sessionToken, numberToCall);
+        if (onBotCall) onBotCall(result);
+        if (result.isWinner && onGameOver) {
+          onGameOver(result);
+        }
+      }
+    }, thinkingDelay);
+  }
+
+  /**
+   * Automatically marks called numbers on all bots' cards with natural response time
+   */
+  triggerBotMarking(number, onBotMarked, onGameOver) {
+    if (this.status !== ROOM_STATUS.PLAYING) return;
+
+    for (const player of this.players.values()) {
+      if (player.isBot && player.card && !player.isWinner) {
+        const delay = 400 + Math.floor(Math.random() * 600);
+        const timeout = setTimeout(() => {
+          if (this.status !== ROOM_STATUS.PLAYING) return;
+          try {
+            const markRes = this.markNumber(player.sessionToken, number);
+            if (onBotMarked) onBotMarked(player, markRes);
+            if (markRes.isWinner && onGameOver) {
+              onGameOver(markRes);
+            }
+          } catch (e) {}
+        }, delay);
+        this.botMarkTimeouts.push(timeout);
+      }
+    }
+  }
+
+  handleTurnTimeout(onAutoCall, onGameOver, onBotCall) {
     if (this.status !== ROOM_STATUS.PLAYING) return;
 
     const activePlayer = this.players.get(this.turnPlayerSessionToken);
@@ -260,6 +420,8 @@ export class Room {
       if (onAutoCall) onAutoCall(result);
       if (result.isWinner && onGameOver) {
         onGameOver(result);
+      } else {
+        this.checkAndTriggerBotTurn(onBotCall, onGameOver);
       }
     }
   }
@@ -549,6 +711,7 @@ export class Room {
       isHost: p.sessionToken === this.hostSessionToken,
       isSpectator: Boolean(p.isSpectator),
       isOnline: Boolean(p.isOnline),
+      isBot: Boolean(p.isBot),
       isTurn: isPlaying && p.sessionToken === this.turnPlayerSessionToken,
       completedCount: p.completedCount,
       completedLines: p.completedLines,

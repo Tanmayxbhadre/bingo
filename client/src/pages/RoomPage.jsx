@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Play, Copy, Check, Share2, Crown, Home, Palette, Pencil } from 'lucide-react';
+import { Play, Copy, Check, Share2, Crown, Home, Palette, Pencil, Bot } from 'lucide-react';
 import { useGame } from '../context/GameContext.jsx';
 import { SkribblHeader } from '../components/SkribblHeader.jsx';
 import { SkribblBingoCard } from '../components/SkribblBingoCard.jsx';
@@ -21,6 +21,7 @@ export function RoomPage() {
     joinRoom,
     leaveRoom,
     startGame,
+    addBot,
     connected,
     sessionToken,
     error,
@@ -28,6 +29,7 @@ export function RoomPage() {
 
   const [copied, setCopied] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
+  const [isAddingBot, setIsAddingBot] = useState(false);
   const [joinFailed, setJoinFailed] = useState(false);
   const [showCustomizeModal, setShowCustomizeModal] = useState(false);
   const [mobileTab, setMobileTab] = useState('card'); // 'card' | 'players' | 'chat'
@@ -109,6 +111,18 @@ export function RoomPage() {
     } catch (e) {
     } finally {
       setIsStarting(false);
+    }
+  };
+
+  const handleAddBot = async () => {
+    try {
+      setIsAddingBot(true);
+      sounds.playPop();
+      await addBot();
+    } catch (e) {
+      console.error('Failed to add bot:', e);
+    } finally {
+      setIsAddingBot(false);
     }
   };
 
@@ -254,6 +268,12 @@ export function RoomPage() {
                         {p.name}
                       </span>
                       <div className="flex items-center space-x-1 mt-0.5">
+                        {p.isBot && (
+                          <span className="bg-purple-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded border border-purple-800 flex items-center space-x-0.5">
+                            <Bot className="w-2.5 h-2.5 text-yellow-300" />
+                            <span>BOT</span>
+                          </span>
+                        )}
                         {p.isHost && (
                           <span className="bg-yellow-400 text-yellow-950 text-[9px] font-black px-1.5 py-0.2 rounded border border-yellow-600 flex items-center space-x-0.5">
                             <Crown className="w-2.5 h-2.5 fill-yellow-950" />
@@ -274,16 +294,30 @@ export function RoomPage() {
             </div>
 
             {/* Start Game Action */}
-            <div className="text-center pt-2">
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
               {roomState.isHost ? (
-                <button
-                  onClick={handleStartGame}
-                  disabled={isStarting}
-                  className="skribbl-btn-green py-3.5 px-10 rounded-2xl text-xl inline-flex items-center space-x-2 tracking-wide"
-                >
-                  <Play className="w-5 h-5 fill-white" />
-                  <span>{isStarting ? 'Starting...' : 'Start Game!'}</span>
-                </button>
+                <>
+                  <button
+                    onClick={handleStartGame}
+                    disabled={isStarting}
+                    className="skribbl-btn-green py-3.5 px-8 rounded-2xl text-xl inline-flex items-center space-x-2 tracking-wide cursor-pointer"
+                  >
+                    <Play className="w-5 h-5 fill-white" />
+                    <span>{isStarting ? 'Starting...' : 'Start Game!'}</span>
+                  </button>
+
+                  {roomState.playerCount < (roomState.maxPlayers || 8) && (
+                    <button
+                      onClick={handleAddBot}
+                      disabled={isAddingBot}
+                      className="bg-purple-600 hover:bg-purple-700 text-white font-black py-3 px-6 rounded-2xl text-base inline-flex items-center space-x-2 border-3 border-[#0b2c4d] shadow-[0_5px_0_#072847] active:translate-y-1 active:shadow-[0_1px_0_#072847] cursor-pointer transition-all"
+                      title="Add an AI bot to fill an empty player slot"
+                    >
+                      <Bot className="w-5 h-5 text-yellow-300" />
+                      <span>{isAddingBot ? 'Adding Bot...' : '+ Add Bot 🤖'}</span>
+                    </button>
+                  )}
+                </>
               ) : (
                 <div className="bg-white/10 text-white font-extrabold text-sm py-3 px-6 rounded-2xl border-2 border-white/20 inline-block animate-pulse">
                   ⏳ Waiting for the room host to start the game...
