@@ -323,8 +323,9 @@ export class Room {
     // Sort candidates descending by weight
     uncalledNumbers.sort((a, b) => (candidateWeights.get(b) || 0) - (candidateWeights.get(a) || 0));
 
-    // 85% pick the optimal strategic move, 15% pick one of top 3 for realistic play
-    if (Math.random() < 0.85 || uncalledNumbers.length <= 1) {
+    // When an immediate line completion is available (weight >= 250), always take it!
+    const highestWeight = candidateWeights.get(uncalledNumbers[0]) || 0;
+    if (highestWeight >= 250 || Math.random() < 0.85 || uncalledNumbers.length <= 1) {
       return uncalledNumbers[0];
     }
     const topChoices = uncalledNumbers.slice(0, Math.min(3, uncalledNumbers.length));
@@ -564,38 +565,6 @@ export class Room {
       completedLines: player.completedLines,
       isWinner: false,
     };
-  }
-
-  advanceTurn() {
-    if (this.turnOrder.length === 0) return;
-
-    // Filter active online players
-    const activeOnlineTokens = this.turnOrder.filter((tok) => {
-      const p = this.players.get(tok);
-      return p && p.isOnline && !p.isSpectator;
-    });
-
-    if (activeOnlineTokens.length === 0) return;
-
-    const currentIndex = activeOnlineTokens.indexOf(this.turnPlayerSessionToken);
-    const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % activeOnlineTokens.length;
-    this.currentTurnIndex = nextIndex;
-    this.turnPlayerSessionToken = activeOnlineTokens[nextIndex];
-    this.turnTimeRemaining = this.turnDurationSec;
-  }
-
-  pauseGame() {
-    if (this.status !== ROOM_STATUS.PLAYING) return false;
-    this.status = ROOM_STATUS.PAUSED;
-    this.clearTurnTimers();
-    return true;
-  }
-
-  resumeGame(onTurnTick, onAutoCall, onGameOver) {
-    if (this.status !== ROOM_STATUS.PAUSED) return false;
-    this.status = ROOM_STATUS.PLAYING;
-    this.startTurnTimer(onTurnTick, onAutoCall, onGameOver);
-    return true;
   }
 
   advanceTurn() {
