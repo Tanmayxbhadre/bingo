@@ -50,9 +50,23 @@ const io = new Server(server, {
 
 setupSocketHandlers(io);
 
-// In production, serve the built client if dist exists
+// In production, serve the built client if dist exists with optimized caching headers
 const clientDistPath = path.resolve(__dirname, '../../client/dist');
-app.use(express.static(clientDistPath));
+app.use(
+  express.static(clientDistPath, {
+    maxAge: '1h',
+    setHeaders: (res, filePath) => {
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      if (filePath.includes(`${path.sep}assets${path.sep}`)) {
+        // Vite hashed asset bundles are immutable
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      } else if (filePath.endsWith('.html')) {
+        // HTML files revalidate to ensure new deployments load immediately
+        res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+      }
+    },
+  })
+);
 
 // Dynamic OpenGraph previews for shared room links (/room/:roomCode)
 app.get('/room/:roomCode', (req, res, next) => {
