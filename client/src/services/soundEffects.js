@@ -227,6 +227,33 @@ class SoundEffects {
     } catch (e) {}
   }
 
+  // Friendly robot beep when AI bot starts thinking/calling
+  playBotTurn() {
+    if (this.isMuted) return;
+    this.init();
+    if (!this.ctx) return;
+
+    try {
+      const frequencies = [600, 750, 900];
+      frequencies.forEach((freq, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.07);
+
+        gain.gain.setValueAtTime(0.08, this.ctx.currentTime + idx * 0.07);
+        gain.gain.exponentialRampToValueAtTime(0.005, this.ctx.currentTime + idx * 0.07 + 0.1);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(this.ctx.currentTime + idx * 0.07);
+        osc.stop(this.ctx.currentTime + idx * 0.07 + 0.11);
+      });
+    } catch (e) {}
+  }
+
   // Defeat / Runner-up sound (gentle descending cartoon notes)
   playDefeat() {
     if (this.isMuted) return;
