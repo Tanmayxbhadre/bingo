@@ -39,6 +39,25 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- JSON-LD Structured Data Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Bingo.io",
+      "applicationCategory": "GameApplication",
+      "operatingSystem": "All",
+      "browserRequirements": "Requires HTML5 Canvas and WebSockets.",
+      "genre": ["Casual Game", "Multiplayer", "Board Game", "Bingo"],
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "description": "Play live 5x5 multiplayer Bingo and solo vs AI bots in your browser. Real-time rooms, custom avatars, sound effects, and win streaks."
+    }
+    </script>
   </head>
   <body class="bg-[#0e3860] min-h-screen text-slate-800 font-game antialiased selection:bg-[#0084ff] selection:text-white">
     <div id="root"></div>
