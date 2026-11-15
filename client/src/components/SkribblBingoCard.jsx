@@ -128,7 +128,7 @@ export function SkribblBingoCard({
           })}
         </svg>
 
-        <div className="grid grid-cols-5 gap-1.5 sm:gap-2.5">
+        <div className="grid grid-cols-5 gap-1.5 sm:gap-2.5" role="grid" aria-label="5 by 5 Bingo Board">
           {card.map((cell) => {
             const isMarked = cell.marked;
             const isWinningCell = winningSet.has(cell.index);
@@ -156,10 +156,16 @@ export function SkribblBingoCard({
               cellClass = 'bg-white hover:bg-emerald-50 text-[#072847] font-black border-3 border-[#0b2c4d] hover:border-emerald-600 shadow-[0_3px_0_#072847] hover:shadow-[0_3px_0_#14532d] cursor-pointer hover:-translate-y-0.5 transition-all';
             }
 
+            const ariaCellLabel = `Number ${cell.number}${isWinningCell ? ', winning line cell' : isMarked ? ', marked' : isLatestCalled ? ', called number, tap to mark' : canCallThis ? ', tap to call' : ''}`;
+
             return (
               <button
                 key={cell.index}
                 type="button"
+                role="gridcell"
+                aria-label={ariaCellLabel}
+                aria-pressed={isMarked}
+                aria-disabled={!isClickable}
                 onClick={() => handleCellClick(cell)}
                 disabled={!isClickable}
                 className={`relative aspect-square rounded-xl sm:rounded-2xl flex flex-col items-center justify-center select-none transition-all duration-150 active:translate-y-0.5 ${cellClass}`}
