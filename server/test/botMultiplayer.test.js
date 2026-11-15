@@ -85,3 +85,4 @@ describe('Multi-Bot Rooms and Lifecycle Cleanup', () => {
     vi.useRealTimers();
   });
 });
+

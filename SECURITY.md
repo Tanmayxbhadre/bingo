@@ -29,3 +29,4 @@ The Bingo.io team takes security and player safety seriously. If you discover a 
 - **Fix & Patch Deployment:** Target resolution within 14 days, depending on severity.
 
 Thank you for helping keep Bingo.io safe and fair for everyone!
+

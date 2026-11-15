@@ -46,3 +46,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Authoritative Server**: Node.js & Socket.io authoritative room engine preventing cheating and desync.
 - **Private & Public Rooms**: Instant room codes with 45s turn timers and automated timeout handling.
 - **Interactive Chat & Avatars**: In-room live chat and modular avatar customizer with vibrant color themes.
+
