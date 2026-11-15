@@ -697,6 +697,9 @@ export class Room {
       isSystem: true,
     };
     this.chatMessages.push(chatMsg);
+    if (this.chatMessages.length > 100) {
+      this.chatMessages.shift();
+    }
     return chatMsg;
   }
 
