@@ -1,9 +1,9 @@
 # 🎯 Bingo.io — Real-Time Multiplayer 5x5 Bingo Game
 
 [![Live Demo](https://img.shields.io/badge/demo-bingo--jo21.onrender.com-blue?style=for-the-badge&logo=render)](https://bingo-jo21.onrender.com)
-[![Tests](https://img.shields.io/badge/tests-21%20passed-brightgreen.svg?style=for-the-badge)]()
+[![Tests](https://img.shields.io/badge/tests-36%20passed-brightgreen.svg?style=for-the-badge)]()
 [![PWA Ready](https://img.shields.io/badge/PWA-installable-orange.svg?style=for-the-badge&logo=pwa)]()
-[![License](https://img.shields.io/badge/license-MIT-purple.svg?style=for-the-badge)]()
+[![License](https://img.shields.io/badge/license-MIT-purple.svg?style=for-the-badge)](./LICENSE)
 
 **Bingo.io** is a full-stack, browser and mobile-friendly real-time multiplayer Bingo game inspired by the cheerful, playful aesthetic of *skribbl.io*. Friends can create custom rooms, share invite links, and play 5×5 classic Bingo together with real-time turn synchronization, mobile haptics, live chat, and instant 5-line win detection.
 
@@ -16,15 +16,19 @@
 
 ## 🚀 Key Features
 
+- **Play vs AI Bot (Solo Mode)**: Jump straight into solo matches anytime without waiting for other players. Features an intelligent heuristic AI decision engine evaluating 12 line trajectories with realistic human-like thinking delays (1.2–2.2s).
+- **Lobby Bot Support (`+ Add Bot 🤖`)**: Hosts can populate empty room slots with intelligent AI bots on demand.
+- **Player Stats & Career Win Streaks**: Local persistence tracking total games played, wins, win streaks, career best streaks, and total lines completed.
+- **Career Rank Progression**: Progressive badges from Rookie (🥉), Apprentice (🎖️), Bingo Scout (🎯), Bingo Star (⭐), Champion (🏆), to Grandmaster (👑).
 - **Authoritative Server Engine**: All cards (numbers 1–25), turn management, automatic verification, and line calculations are strictly validated by the server to prevent cheating or client-side tampering.
 - **Turn-Based Multiplayer Interaction (Skribbl.io Style)**:
   - Both players share numbers 1–25 in independently scrambled 5×5 grids.
   - Players take turns picking a number from their card to call it.
   - When an opponent calls a number, the player clicks it on their card to stamp a red crayon `✕` with instant 0ms optimistic visual feedback.
 - **Winning Condition (ANY 5 Lines)**: The first player to complete any 5 lines (rows, columns, or diagonals) wins BINGO! Intersecting cells contribute to multiple lines.
-- **PWA (Progressive Web App)**: Installable directly on Android, iPhone, and desktop browsers without going through app stores.
+- **PWA (Progressive Web App)**: Service Worker asset caching, Web App Manifest, installable directly on Android, iPhone, and desktop browsers without going through app stores.
 - **Mobile Haptic Feedback**: Physical vibration feedback when stamping numbers, receiving turn alerts, or winning.
-- **Social Sharing**: One-tap victory sharing with pre-formatted invitation cards via Web Share API and rich OpenGraph social tags for WhatsApp and Discord.
+- **Social Sharing & Rich Link Previews**: 1200x630 OpenGraph cards, dynamic room meta tags, and 1-tap WhatsApp invitation sharing.
 - **Vibrant & Dynamic Background**: Smoothly panning diagonal comic polka-dot patterns, radiant ambient glow orbs, and floating 3D-illustrated glossy Bingo balls drifting across the viewport.
 - **Real-Time Multiplayer Lobby**:
   - 6-character room codes.
@@ -100,5 +104,12 @@ npm --workspace=server start
 
 ---
 
+## 📚 Documentation
+- [Changelog](./CHANGELOG.md) — Release notes and version history
+- [Contributing Guide](./CONTRIBUTING.md) — How to contribute and submit PRs
+- [Security Policy](./SECURITY.md) — Vulnerability reporting and SLAs
+
+---
+
 ## 📜 License
-This project is licensed under the MIT License.
+This project is licensed under the [MIT License](./LICENSE).
