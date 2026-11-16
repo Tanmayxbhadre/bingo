@@ -73,6 +73,17 @@ export function SkribblBingoCard({
 
   return (
     <div className="flex flex-col items-center w-full max-w-lg mx-auto select-none">
+      {/* Screen-reader live announcement region for accessibility */}
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {isGameOver
+          ? 'Game over!'
+          : isMyTurn
+          ? "It's your turn to call a number from 1 to 25."
+          : currentCalledNumber
+          ? `Number ${currentCalledNumber} was called. Check your card to mark it.`
+          : 'Waiting for round to begin.'}
+      </div>
+
       {/* 5x5 Drawing Canvas Card */}
       <div className="relative w-full bg-gradient-to-b from-white via-white to-sky-50/50 rounded-3xl sm:rounded-[32px] border-4 border-[#0b2c4d] shadow-[0_8px_0_#072847,0_16px_30px_rgba(7,43,77,0.25)] p-2.5 sm:p-4">
         {/* Bold, Clean Red Strikethrough Guide Lines */}
