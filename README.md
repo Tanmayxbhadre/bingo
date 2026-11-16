@@ -1,7 +1,7 @@
 # 🎯 Bingo.io — Real-Time Multiplayer 5x5 Bingo Game
 
 [![Live Demo](https://img.shields.io/badge/demo-bingo--jo21.onrender.com-blue?style=for-the-badge&logo=render)](https://bingo-jo21.onrender.com)
-[![Tests](https://img.shields.io/badge/tests-36%20passed-brightgreen.svg?style=for-the-badge)]()
+[![Tests](https://img.shields.io/badge/tests-48%20passed-brightgreen.svg?style=for-the-badge)]()
 [![PWA Ready](https://img.shields.io/badge/PWA-installable-orange.svg?style=for-the-badge&logo=pwa)]()
 [![License](https://img.shields.io/badge/license-MIT-purple.svg?style=for-the-badge)](./LICENSE)
 
@@ -105,6 +105,8 @@ npm --workspace=server start
 ---
 
 ## 📚 Documentation
+- [Architecture & System Design](./ARCHITECTURE.md) — Authoritative server state machine & AI bot heuristics
+- [WebSocket API Specification](./API_SPEC.md) — Socket.IO events, payloads, and broadcast specs
 - [Changelog](./CHANGELOG.md) — Release notes and version history
 - [Contributing Guide](./CONTRIBUTING.md) — How to contribute and submit PRs
 - [Security Policy](./SECURITY.md) — Vulnerability reporting and SLAs
