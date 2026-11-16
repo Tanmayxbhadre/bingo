@@ -41,8 +41,10 @@ export function PlayerStatsCard() {
         <div className="flex items-center space-x-1.5">
           <div
             className={`px-2.5 py-1 rounded-xl text-xs font-black flex items-center space-x-1 border-2 transition-all ${
-              stats.winStreak > 0
-                ? 'bg-gradient-to-r from-orange-400 to-amber-400 text-yellow-950 border-orange-600 shadow-sm animate-pulse'
+              stats.winStreak >= 3
+                ? 'bg-gradient-to-r from-orange-500 via-amber-400 to-yellow-400 text-yellow-950 border-orange-600 shadow-md ring-2 ring-yellow-400 animate-pulse'
+                : stats.winStreak > 0
+                ? 'bg-gradient-to-r from-orange-400 to-amber-400 text-yellow-950 border-orange-600 shadow-sm'
                 : 'bg-slate-100 text-slate-500 border-slate-200'
             }`}
           >
