@@ -182,18 +182,31 @@ export function RoomPage() {
               </h2>
 
               {/* Big Room Code Box */}
-              <div className="inline-flex items-center space-x-3 bg-white border-3 border-[#0b2c4d] px-6 py-2.5 rounded-2xl mb-4 shadow-[inset_0_2px_4px_rgba(0,0,0,0.06),0_3px_0_#072847]">
+              <div
+                onClick={handleCopyLink}
+                className="inline-flex items-center space-x-3 bg-white border-3 border-[#0b2c4d] px-6 py-2.5 rounded-2xl mb-4 shadow-[inset_0_2px_4px_rgba(0,0,0,0.06),0_3px_0_#072847] cursor-pointer hover:border-[#0084ff] transition-colors relative"
+                title="Click to copy invite link"
+              >
                 <span className="text-xs font-black uppercase text-slate-500">Room Code:</span>
                 <span className="font-mono text-3xl font-black text-[#0284c7] tracking-wider">
                   {roomState.roomCode}
                 </span>
                 <button
-                  onClick={handleCopyLink}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCopyLink();
+                  }}
                   className="bg-yellow-400 hover:bg-yellow-300 p-2 rounded-xl border-2 border-[#0b2c4d] transition-all active:scale-95 shadow-sm cursor-pointer"
                   title="Copy Link"
                 >
                   {copied ? <Check className="w-4 h-4 text-emerald-800" /> : <Copy className="w-4 h-4 text-[#072847]" />}
                 </button>
+                {copied && (
+                  <span className="absolute -top-3 right-2 bg-emerald-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-md animate-bounce">
+                    Copied!
+                  </span>
+                )}
               </div>
 
               {/* Share & Invite Action Bar */}
