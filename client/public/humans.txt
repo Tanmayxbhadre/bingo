@@ -7,3 +7,4 @@
   Standards: HTML5, CSS3, ES2022, WebSockets, Progressive Web App
   Components: React, Vite, Tailwind CSS, Socket.IO, Canvas-Confetti
   Software: Node.js, Express, Vitest
+
