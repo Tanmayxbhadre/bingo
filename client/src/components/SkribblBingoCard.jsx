@@ -34,6 +34,24 @@ export function SkribblBingoCard({
     }
   };
 
+  // Keyboard shortcut: Space quickly stamps the active called number on your card
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.key === ' ' || e.key === 'Enter') {
+        if (!isGameOver && currentCalledNumber) {
+          const targetCell = card?.find((c) => c.number === currentCalledNumber && !c.marked);
+          if (targetCell) {
+            e.preventDefault();
+            handleCellClick(targetCell);
+          }
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [card, currentCalledNumber, isGameOver, isMyTurn]);
+
   if (!card || card.length !== 25) {
     return (
       <div className="flex items-center justify-center h-96 bg-white rounded-[32px] border-4 border-[#0b2c4d] text-slate-500 font-bold shadow-[0_10px_0_#072847]">
