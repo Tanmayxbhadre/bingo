@@ -28,6 +28,12 @@ app.use(
 );
 app.use(express.json());
 
+// Standard security & frame embedding headers
+app.use((req, res, next) => {
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  next();
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({
