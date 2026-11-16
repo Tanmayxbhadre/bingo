@@ -26,7 +26,17 @@ class SoundEffects {
 
   toggleMute() {
     this.isMuted = !this.isMuted;
-    localStorage.setItem('bingo_muted', String(this.isMuted));
+    try {
+      localStorage.setItem('bingo_muted', String(this.isMuted));
+    } catch (e) {}
+    return this.isMuted;
+  }
+
+  setMuted(muted) {
+    this.isMuted = Boolean(muted);
+    try {
+      localStorage.setItem('bingo_muted', String(this.isMuted));
+    } catch (e) {}
     return this.isMuted;
   }
 
