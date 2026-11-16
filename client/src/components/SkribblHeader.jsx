@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Clock, Copy, Check, Volume2, VolumeX, LogOut, Crown, Pause, Play } from 'lucide-react';
+import { Clock, Copy, Check, Volume2, VolumeX, LogOut, Crown, Pause, Play, WifiOff } from 'lucide-react';
 import { useGame } from '../context/GameContext.jsx';
 import { SkribblLogo } from './SkribblLogo.jsx';
 import { sounds } from '../services/soundEffects.js';
@@ -19,6 +19,18 @@ export function SkribblHeader() {
   } = useGame();
 
   const [copied, setCopied] = useState(false);
+  const [isOnline, setIsOnline] = useState(() => (typeof navigator !== 'undefined' ? navigator.onLine : true));
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   const handleCopy = () => {
     if (!roomState?.roomCode) return;
@@ -57,6 +69,13 @@ export function SkribblHeader() {
               <span className="font-mono text-yellow-300 font-black">{roomState.roomCode}</span>
               {copied ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Copy className="w-3.5 h-3.5 text-white/80" />}
             </button>
+          )}
+
+          {!isOnline && (
+            <div className="flex items-center space-x-1 bg-amber-500 text-yellow-950 px-2 py-0.5 rounded-lg text-xs font-black animate-pulse border border-amber-600 shadow-sm">
+              <WifiOff className="w-3 h-3" />
+              <span>Offline</span>
+            </div>
           )}
 
           {/* Sound & Exit for mobile */}
