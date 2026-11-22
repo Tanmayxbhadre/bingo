@@ -19,6 +19,7 @@ export function HomePage() {
     joinRoom,
     publicRooms,
     fetchPublicRooms,
+    connected,
     error,
     clearError,
     isMuted,
@@ -194,6 +195,13 @@ export function HomePage() {
             <button onClick={clearError} className="underline ml-2">
               Dismiss
             </button>
+          </div>
+        )}
+
+        {/* Server Cold-Start Awakening Banner */}
+        {!connected && (
+          <div className="mb-2.5 w-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 text-yellow-950 p-2.5 rounded-2xl border-2 border-amber-600 font-black text-xs text-center shadow-md animate-pulse flex items-center justify-center space-x-2">
+            <span>⚡ Waking up game server... (first load may take ~30s)</span>
           </div>
         )}
 
