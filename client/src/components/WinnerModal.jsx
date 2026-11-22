@@ -5,6 +5,7 @@ import { Trophy, RotateCcw, Home, Eye, Award, Frown, Sparkles, Share2, Flame } f
 import { useGame } from '../context/GameContext.jsx';
 import { CharacterAvatar } from './CharacterAvatar.jsx';
 import { sounds } from '../services/soundEffects.js';
+import { poki } from '../services/pokiService.js';
 
 export function WinnerModal({ winner }) {
   const navigate = useNavigate();
@@ -222,8 +223,9 @@ export function WinnerModal({ winner }) {
 
           {roomState?.isHost ? (
             <button
-              onClick={() => {
+              onClick={async () => {
                 sounds.playPop();
+                await poki.commercialBreak();
                 playAgain();
               }}
               className="w-full skribbl-btn-green py-3 rounded-2xl text-base font-black flex items-center justify-center space-x-2 cursor-pointer shadow-md"

@@ -12,6 +12,7 @@ import { CustomizeProfileModal } from '../components/CustomizeProfileModal.jsx';
 import { CharacterAvatar } from '../components/CharacterAvatar.jsx';
 import { ROOM_STATUS } from '@shared/constants/gameConstants.js';
 import { sounds } from '../services/soundEffects.js';
+import { poki } from '../services/pokiService.js';
 
 export function RoomPage() {
   const { roomCode } = useParams();
@@ -61,6 +62,21 @@ export function RoomPage() {
       }
     }
   }, [roomState, sessionToken]);
+
+  // Synchronize Poki SDK gameplay lifecycle
+  useEffect(() => {
+    if (roomState?.status === ROOM_STATUS.PLAYING) {
+      poki.gameplayStart();
+    } else if (roomState?.status === ROOM_STATUS.GAME_OVER) {
+      poki.gameplayStop();
+    }
+  }, [roomState?.status]);
+
+  useEffect(() => {
+    return () => {
+      poki.gameplayStop();
+    };
+  }, []);
 
   const handleCopyLink = () => {
     sounds.playPop();
