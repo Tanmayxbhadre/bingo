@@ -91,9 +91,11 @@ export function GameProvider({ children }) {
       import.meta.env.VITE_SERVER_URL ||
       (isLocalhost
         ? 'http://localhost:4000'
-        : (typeof window !== 'undefined' && window.location.origin.includes('onrender.com')
+        : (typeof window !== 'undefined' &&
+           (window.location.origin.includes('trybingo.me') ||
+            window.location.origin.includes('onrender.com'))
             ? window.location.origin
-            : 'https://bingo-jo21.onrender.com'));
+            : 'https://trybingo.me'));
 
     const socket = io(serverUrl, {
       transports: ['websocket', 'polling'],
