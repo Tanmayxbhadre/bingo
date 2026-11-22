@@ -7,22 +7,25 @@ import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage.jsx';
 import { TermsPage } from './pages/TermsPage.jsx';
 import { PlayfulBackground } from './components/PlayfulBackground.jsx';
 import { FloatingReactions } from './components/FloatingReactions.jsx';
+import { ErrorBoundary } from './components/ErrorBoundary.jsx';
 
 export default function App() {
   return (
-    <GameProvider>
-      <PlayfulBackground />
-      <FloatingReactions />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/room/:roomCode" element={<RoomPage />} />
-          <Route path="/privacy" element={<PrivacyPolicyPage />} />
-          <Route path="/terms" element={<TermsPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </GameProvider>
+    <ErrorBoundary>
+      <GameProvider>
+        <PlayfulBackground />
+        <FloatingReactions />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/room/:roomCode" element={<RoomPage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </GameProvider>
+    </ErrorBoundary>
   );
 }
 

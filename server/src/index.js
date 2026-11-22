@@ -58,6 +58,17 @@ setupSocketHandlers(io);
 
 // In production, serve the built client if dist exists with optimized caching headers
 const clientDistPath = path.resolve(__dirname, '../../client/dist');
+const clientAssetsPath = path.join(clientDistPath, 'assets');
+
+// Defensive: alias nested route assets (e.g. /room/assets/*) to client assets
+app.use('/room/assets', express.static(clientAssetsPath, {
+  maxAge: '1y',
+  immutable: true,
+  setHeaders: (res) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+  },
+}));
+
 app.use(
   express.static(clientDistPath, {
     maxAge: '1h',

@@ -151,7 +151,11 @@ export function RoomPage() {
             {error ? 'Room Notice' : `Joining Room ${roomCode}...`}
           </h2>
           <p className="text-slate-500 font-bold text-xs">
-            {error ? 'Could not connect to this room.' : 'Getting your 1–25 card ready!'}
+            {!connected
+              ? '⚡ Waking up game server... (first load may take ~30s)'
+              : error
+              ? 'Could not connect to this room.'
+              : 'Getting your 1–25 card ready!'}
           </p>
           {error && (
             <div className="bg-rose-50 text-rose-700 font-black text-xs p-2.5 rounded-xl border border-rose-200">
