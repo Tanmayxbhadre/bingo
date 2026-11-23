@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Sparkles, Check } from 'lucide-react';
 import { useGame } from '../context/GameContext.jsx';
 import { sounds } from '../services/soundEffects.js';

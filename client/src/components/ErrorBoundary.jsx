@@ -33,6 +33,11 @@ export class ErrorBoundary extends React.Component {
             <p className="text-slate-500 font-bold text-xs">
               Don't worry, your game state is safe. Let's get you back in action!
             </p>
+            {this.state.error && (
+              <div className="bg-rose-50 text-rose-700 font-mono text-[11px] p-2 rounded-xl border border-rose-200 text-left overflow-auto max-h-24 break-words">
+                {this.state.error.message || String(this.state.error)}
+              </div>
+            )}
             <div className="flex flex-col gap-2 pt-2">
               <button
                 type="button"
