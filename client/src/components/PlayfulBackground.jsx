@@ -62,14 +62,14 @@ export function PlayfulBackground() {
       <div className="absolute bottom-[-10%] left-[25%] w-[550px] h-[550px] bg-cyan-300/30 rounded-full blur-[100px] animate-orb-3" />
       <div className="absolute top-[45%] left-[-8%] w-[450px] h-[450px] bg-amber-400/20 rounded-full blur-[90px] animate-orb-1" />
 
-      {/* 3. Floating 3D Bingo Balls drifting safely at screen edges (hidden on mobile to keep screen clean & uncluttered) */}
+      {/* 3. Floating 3D Bingo Balls drifting around the game arena */}
       <div className="hidden sm:block">
-        <BingoBall number={7} color="#fbbf24" top="8%" left="2%" size={58} animClass="animate-ball-1" delay="0s" opacity={0.85} />
-        <BingoBall number={21} color="#f97316" top="38%" right="2%" size={52} animClass="animate-ball-2" delay="1.5s" opacity={0.8} />
-        <BingoBall number={3} color="#38bdf8" top="68%" left="2%" size={54} animClass="animate-ball-3" delay="2.2s" opacity={0.8} />
-        <BingoBall number={15} color="#22c55e" top="84%" right="2%" size={50} animClass="animate-ball-1" delay="3s" opacity={0.85} />
-        <BingoBall number={9} color="#f59e0b" top="14%" right="1.5%" size={44} animClass="animate-ball-2" delay="0.5s" opacity={0.75} />
-        <BingoBall number={18} color="#a855f7" bottom="8%" left="1.5%" size={48} animClass="animate-ball-3" delay="2s" opacity={0.75} />
+        <BingoBall number={7} color="#fbbf24" top="10%" left="6%" size={68} animClass="animate-ball-1" delay="0s" opacity={0.92} />
+        <BingoBall number={21} color="#f97316" top="34%" right="6%" size={62} animClass="animate-ball-2" delay="1.2s" opacity={0.92} />
+        <BingoBall number={3} color="#38bdf8" top="64%" left="5%" size={60} animClass="animate-ball-3" delay="2.4s" opacity={0.9} />
+        <BingoBall number={15} color="#22c55e" top="82%" right="7%" size={58} animClass="animate-ball-1" delay="3.1s" opacity={0.92} />
+        <BingoBall number={9} color="#ef4444" top="12%" right="8%" size={54} animClass="animate-ball-2" delay="0.6s" opacity={0.88} />
+        <BingoBall number={25} color="#a855f7" bottom="10%" left="8%" size={64} animClass="animate-ball-3" delay="1.8s" opacity={0.9} />
       </div>
 
       {/* 4. Playful Cartoon Doodles (hidden on small mobile to avoid clutter) */}
