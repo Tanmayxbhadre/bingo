@@ -183,6 +183,8 @@ export function RoomPage() {
   const isMyTurn = !isGameOver && roomState.isMyTurn;
   const turnPlayerName = roomState.turnPlayerName || 'Opponent';
   const currentCalled = !isGameOver ? roomState.currentCalledNumber : null;
+  const me = roomState.players?.find((p) => p.sessionToken === sessionToken);
+  const opponents = roomState.players?.filter((p) => p.sessionToken !== sessionToken) || [];
 
   return (
     <div className="min-h-screen flex flex-col justify-between">
@@ -366,41 +368,49 @@ export function RoomPage() {
         ) : (
           /* ==================== SKRIBBL 3-COLUMN GAMEPLAY VIEW ==================== */
           <div className="flex flex-col pt-1">
-            {/* Mobile Tab Toggle Pills (visible only on mobile/tablet < lg) */}
-            <div className="flex lg:hidden items-center justify-center space-x-2 mb-2.5">
-              <button
-                type="button"
-                onClick={() => setMobileTab('card')}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-black border-2 transition-all ${
-                  mobileTab === 'card'
-                    ? 'bg-yellow-400 text-yellow-950 border-[#0b2c4d] shadow-[0_3px_0_#08233d]'
-                    : 'bg-white/20 text-white border-white/20'
-                }`}
-              >
-                🎯 Bingo Card
-              </button>
-              <button
-                type="button"
-                onClick={() => setMobileTab('players')}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-black border-2 transition-all ${
-                  mobileTab === 'players'
-                    ? 'bg-yellow-400 text-yellow-950 border-[#0b2c4d] shadow-[0_3px_0_#08233d]'
-                    : 'bg-white/20 text-white border-white/20'
-                }`}
-              >
-                👥 Players ({roomState.playerCount})
-              </button>
-              <button
-                type="button"
-                onClick={() => setMobileTab('chat')}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-black border-2 transition-all ${
-                  mobileTab === 'chat'
-                    ? 'bg-yellow-400 text-yellow-950 border-[#0b2c4d] shadow-[0_3px_0_#08233d]'
-                    : 'bg-white/20 text-white border-white/20'
-                }`}
-              >
-                💬 Chat
-              </button>
+            {/* Mobile Tab Segmented Controller */}
+            <div className="flex lg:hidden items-center justify-center mb-2 px-2">
+              <div className="inline-flex bg-[#072b4d]/60 backdrop-blur-md p-1 rounded-2xl border-2 border-white/20 shadow-md">
+                <button
+                  type="button"
+                  onClick={() => setMobileTab('card')}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all ${
+                    mobileTab === 'card'
+                      ? 'bg-gradient-to-b from-yellow-300 to-amber-400 text-yellow-950 shadow-[0_2px_0_#92400e] border border-amber-600'
+                      : 'text-white/85 hover:text-white'
+                  }`}
+                >
+                  🎯 Card
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMobileTab('players')}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all flex items-center space-x-1 ${
+                    mobileTab === 'players'
+                      ? 'bg-gradient-to-b from-yellow-300 to-amber-400 text-yellow-950 shadow-[0_2px_0_#92400e] border border-amber-600'
+                      : 'text-white/85 hover:text-white'
+                  }`}
+                >
+                  <span>👥 Players</span>
+                  <span className="text-[10px] bg-black/20 px-1.5 py-0.2 rounded-full font-black">
+                    {roomState.playerCount}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMobileTab('chat')}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all flex items-center space-x-1 ${
+                    mobileTab === 'chat'
+                      ? 'bg-gradient-to-b from-yellow-300 to-amber-400 text-yellow-950 shadow-[0_2px_0_#92400e] border border-amber-600'
+                      : 'text-white/85 hover:text-white'
+                  }`}
+                >
+                  <span>💬 Chat</span>
+                  {roomState.chatMessages?.length > 0 && (
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <div className="flex flex-col lg:flex-row gap-4 items-start justify-center relative z-10">
@@ -451,6 +461,53 @@ export function RoomPage() {
                   completedCount={roomState.myCompletedCount}
                   completedLines={roomState.myCompletedLines || []}
                 />
+
+                {/* Mobile Opponent Quick Matchup HUD (Fills empty mobile space with valuable game context) */}
+                {opponents.length > 0 && (
+                  <div className="w-full flex lg:hidden items-center justify-between bg-white/95 backdrop-blur-sm border-2 border-[#0b2c4d] rounded-2xl px-3 py-1.5 shadow-[0_3px_0_#072847]">
+                    {/* You */}
+                    <div className="flex items-center space-x-1.5 min-w-0">
+                      <CharacterAvatar id={me?.avatar} color={me?.color || '#55b338'} size={28} />
+                      <div className="truncate">
+                        <div className="font-black text-[#072847] text-[11px] truncate">{me?.name || 'You'}</div>
+                        <div className="text-[10px] font-black text-emerald-600">⭐ {roomState.myCompletedCount || 0}/5</div>
+                      </div>
+                    </div>
+
+                    {/* VS Tag */}
+                    <span className="px-2 py-0.5 bg-yellow-400 text-yellow-950 font-black text-[10px] rounded-full border border-yellow-600 shadow-sm mx-1">
+                      VS
+                    </span>
+
+                    {/* Opponent(s) */}
+                    <div className="flex items-center space-x-1.5 overflow-x-auto min-w-0 justify-end">
+                      {opponents.slice(0, 2).map((opp) => {
+                        const isOppTurn = opp.sessionToken === roomState.turnPlayerSessionToken;
+                        return (
+                          <div
+                            key={opp.sessionToken}
+                            className={`flex items-center space-x-1 px-2 py-0.5 rounded-xl border ${
+                              isOppTurn
+                                ? 'bg-amber-100 border-amber-500 ring-2 ring-amber-300'
+                                : 'bg-slate-50 border-slate-200'
+                            }`}
+                          >
+                            <CharacterAvatar id={opp.avatar} color={opp.color || '#0084ff'} size={24} />
+                            <div className="truncate max-w-[64px]">
+                              <div className="font-extrabold text-[#072847] text-[10px] truncate">{opp.name}</div>
+                              <div className="text-[9px] font-black text-amber-700">⭐ {opp.completedCount || 0}/5</div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* In-Game Live Reaction Tray (Accessible anytime on mobile & desktop!) */}
+                <div className="w-full">
+                  <EmojiReactionTray />
+                </div>
               </div>
 
               {/* Right Column: skribbl Chat & Called Numbers */}
